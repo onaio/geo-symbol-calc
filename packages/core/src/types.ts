@@ -105,3 +105,15 @@ export interface Form {
   formid: number;
   [numOfSubmissionsAccessor]: number;
 }
+
+export type timestamp = number;
+
+export interface Metrics {
+  configId: string;
+  startTime: timestamp;
+  endTime: timestamp;
+  evaluated: number;
+  notModifiedWithoutError: number;
+  notModdifiedDueError: number;
+  modified: number;
+}

@@ -5,11 +5,14 @@ import {
   LogMessageLevels,
   PriorityLevel,
   RegFormSubmission,
-  SymbologyConfig
+  SymbologyConfig,
+  timestamp,
+  VisitFormSubmission
 } from './types';
 import * as yup from 'yup';
 import nodeCron from 'node-cron';
-import { priorityLevelAccessor } from './constants';
+import { dateOfVisitAccessor, priorityLevelAccessor } from './constants';
+import { OnaApiService } from './services';
 
 export const createInfoLog = (message: string) => ({ level: LogMessageLevels.INFO, message });
 export const createWarnLog = (message: string) => ({ level: LogMessageLevels.WARN, message });
@@ -150,3 +153,87 @@ export class Result<T> {
     return new Result<U>(false, error);
   }
 }
+
+export async function getMostRecentVisitDateForFacility(
+  service: OnaApiService,
+  facilityId: number,
+  visitFormId: string,
+  logger?: LogFn
+) {
+  logger?.(createVerboseLog(`Start evaluating symbology for submission _id: ${facilityId}`));
+  const query = {
+    query: `{"facility": ${facilityId}}`, // filter visit submissions for this facility
+    sort: `{"${dateOfVisitAccessor}": -1}` // sort in descending, most recent first.
+  };
+
+  // fetch the most recent visit submission for this facility
+  const visitSubmissionsResult = await service.fetchPaginatedFormSubmissions<VisitFormSubmission>(
+    visitFormId,
+    1,
+    query,
+    1
+  );
+
+  if (visitSubmissionsResult.isFailure) {
+    logger?.(
+      createErrorLog(
+        `Operationto fetch submission for facility: ${facilityId} failed with error: ${visitSubmissionsResult.error}`
+      )
+    );
+    return Result.fail<timestamp>(visitSubmissionsResult.error);
+  }
+
+  const visitSubmissions = visitSubmissionsResult.getValue();
+  const mostRecentSubmission = visitSubmissions[0];
+
+  if (mostRecentSubmission !== undefined) {
+    logger?.(
+      createInfoLog(
+        `facility _id: ${facilityId} latest visit submission has _id: ${mostRecentSubmission._id}`
+      )
+    );
+
+    const dateOfVisit = Date.parse(mostRecentSubmission[dateOfVisitAccessor]);
+    return Result.ok<timestamp>(dateOfVisit);
+  } else {
+    logger?.(createWarnLog(`facility _id: ${facilityId} has no visit submissions`));
+    return Result.ok<undefined>();
+  }
+}
+
+export function computeTimeToKnow(dateResult: Result<timestamp> | Result<undefined>) {
+  let recentVisitDiffToNow = Infinity;
+
+  if (dateResult.isFailure) {
+    return recentVisitDiffToNow;
+  }
+
+  const date = dateResult.getValue();
+  if (date === undefined) {
+    return recentVisitDiffToNow;
+  }
+  const now = Date.now();
+  const msInADay = 1000 * 60 * 60 * 24;
+  recentVisitDiffToNow = Math.ceil((now - date) / msInADay);
+  return recentVisitDiffToNow;
+}
+
+export const createMetric = (
+  uuid: string,
+  startTime: timestamp,
+  endTime: timestamp,
+  evaluated: number,
+  notModifiedWithoutError: number,
+  notModdifiedDueError: number,
+  modified: number
+) => {
+  return {
+    configId: uuid,
+    startTime,
+    endTime,
+    evaluated,
+    notModifiedWithoutError,
+    notModdifiedDueError,
+    modified
+  };
+};
