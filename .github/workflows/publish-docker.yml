@@ -30,8 +30,8 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            onaio/${{ github.event.repository.name }}
-            # ghcr.io/onaio/${{ github.event.repository.name }}
+            onaio/geo-symbology-calc
+            # ghcr.io/onaio/geo-symbology-calc
           tags: |
             # set the latest tag for main branch
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
@@ -76,7 +76,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          repository: onaio/${{ github.event.repository.name }}
+          repository: onaio/geo-symbology-calc
           readme-filepath: docs/user-docker-image.md
       - 
         name: Image digest
