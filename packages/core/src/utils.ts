@@ -3,11 +3,14 @@ import {
   Config,
   LogFn,
   LogMessageLevels,
+  Metric,
   PriorityLevel,
+  ReadMetric,
   RegFormSubmission,
   SymbologyConfig,
   timestamp,
-  VisitFormSubmission
+  VisitFormSubmission,
+  WriteMetric
 } from './types';
 import * as yup from 'yup';
 import nodeCron from 'node-cron';
@@ -221,7 +224,7 @@ export function computeTimeToKnow(dateResult: Result<timestamp> | Result<undefin
 export const createMetric = (
   uuid: string,
   startTime: timestamp,
-  endTime: timestamp,
+  endTime: timestamp | null,
   evaluated: number,
   notModifiedWithoutError: number,
   notModdifiedDueError: number,
@@ -237,3 +240,30 @@ export const createMetric = (
     modified
   };
 };
+
+export const evaluatingTasks: Record<string, Metric> = {};
+
+export const defaultReadMetric: ReadMetric = (configId?: string) => {
+  if (configId) {
+    return evaluatingTasks[configId];
+  } else return Object.values(evaluatingTasks);
+};
+
+export const defaultWriteMetric: WriteMetric = (metric: Metric) => {
+  evaluatingTasks[metric.configId] = metric;
+};
+
+export function isPipelineRunningFromMetric(metric: Metric) {
+  if (metric) {
+    const endDate = metric.endTime;
+    if (endDate !== null) {
+      //  if endDate is after startTime then we can assume its not running.
+      if (endDate - metric.startTime >= 0) {
+        return false;
+      }
+    }
+  } else {
+    return false;
+  }
+  return true;
+}

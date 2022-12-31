@@ -41,6 +41,10 @@ export interface Config {
   schedule: CronTabString;
   // how many registration form submissions to process at a time.
   regFormSubmissionChunks?: number;
+  // store metric; progress information regarding a running or the last run of an pipeline
+  writeMetric: WriteMetric;
+  // read metric information as stored by writeMetric
+  readMetric: ReadMetric;
 }
 
 export enum PriorityLevel {
@@ -108,12 +112,20 @@ export interface Form {
 
 export type timestamp = number;
 
-export interface Metrics {
+export interface Metric {
   configId: string;
   startTime: timestamp;
-  endTime: timestamp;
+  endTime: timestamp | null;
   evaluated: number;
   notModifiedWithoutError: number;
   notModdifiedDueError: number;
   modified: number;
+}
+
+export interface ReadMetric {
+  (configId?: string): Metric | undefined | Metric[];
+}
+
+export interface WriteMetric {
+  (metric: Metric): void;
 }
