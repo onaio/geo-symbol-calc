@@ -21,6 +21,9 @@ startConfiguredPipelines();
 	const watcher = watch(configDir);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	for await (const _event of watcher) {
-		startConfiguredPipelines();
+		console.log({ _event });
+		if (_event.eventType === 'change' && _event.filename === 'local.json') {
+			startConfiguredPipelines();
+		}
 	}
 })();
