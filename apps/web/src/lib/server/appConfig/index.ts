@@ -6,6 +6,7 @@ import { uniqWith } from 'lodash-es';
 import yup from 'yup';
 import type { Config } from '@onaio/symbology-calc-core';
 import { getConfig } from './utils';
+import { readMetricOverride, writePripelineMetrics } from '../logger/configMetrics';
 
 export function webValidateConfigs(config: Config) {
 	const extraSchema = yup.object().shape({
@@ -25,7 +26,9 @@ export function getAllSymbologyConfigs() {
 	const allSymbologyConfigs = rawSymbologyConfigs.map((config) => {
 		return {
 			...config,
-			logger: geoSymbolLogger
+			logger: geoSymbolLogger,
+			writeMetric: writePripelineMetrics,
+			readMetric: readMetricOverride
 		};
 	});
 	allSymbologyConfigs.forEach(webValidateConfigs);
