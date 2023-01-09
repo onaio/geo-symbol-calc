@@ -23,16 +23,22 @@ export class OnaApiService {
   private baseUrl: string;
   private token: string;
   private logger: LogFn | undefined;
+  private controller?: AbortController;
+  private signal?: AbortSignal;
 
-  constructor(baseUrl: string, apiToken: string, logger?: LogFn) {
+  constructor(baseUrl: string, apiToken: string, logger?: LogFn, controller?: AbortController) {
     this.baseUrl = baseUrl;
     this.token = apiToken;
     this.logger = logger;
+    this.controller = controller;
+    this.signal = controller?.signal;
   }
 
   /** defines shared options to be added to fetch request */
   getCommonFetchOptions() {
+    const signal = this.signal;
     return {
+      signal,
       headers: {
         Authorization: `token ${this.token}`,
         'content-type': 'application/json'

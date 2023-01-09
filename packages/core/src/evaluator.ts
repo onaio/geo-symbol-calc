@@ -9,8 +9,9 @@ import {
   defaultReadMetric,
   defaultWriteMetric,
   getMostRecentVisitDateForFacility,
-  isPipelineRunningFromMetric,
-  Result
+  isPipelineRunning,
+  Result,
+  Sig
 } from './utils';
 import cron from 'node-cron';
 import { markerColorAccessor, numOfSubmissionsAccessor } from './constants';
@@ -23,7 +24,7 @@ import { markerColorAccessor, numOfSubmissionsAccessor } from './constants';
  */
 export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
   const startTime = Date.now();
-  let endTime;
+  let endTime = null;
   let evaluatedSubmissions = 0;
   let notModifiedWithError = 0;
   let notModifiedWithoutError = 0;
@@ -40,90 +41,95 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
     modified
   );
 
-  const { formPair, symbolConfig, logger, baseUrl, apiToken } = config;
+  const { formPair, symbolConfig, logger, baseUrl, apiToken, requestController } = config;
   const regFormSubmissionChunks = config['regFormSubmissionChunks'] ?? 1000;
   const { regFormId: registrationFormId, visitFormId: visitformId } = formPair;
 
-  const service = new OnaApiService(baseUrl, apiToken, logger);
+  const service = new OnaApiService(baseUrl, apiToken, logger, requestController);
   const colorDecider = colorDeciderFactory(symbolConfig, logger);
 
-  const regForm = await service.fetchSingleForm(registrationFormId);
-  if (regForm.isFailure) {
-    endTime = Date.now();
-    yield createMetric(
-      config.uuid,
-      startTime,
-      endTime,
-      evaluatedSubmissions,
-      notModifiedWithoutError,
-      notModifiedWithError,
-      modified
-    );
-    return;
-  }
-  const regFormSubmissionsNum = regForm.getValue()[numOfSubmissionsAccessor];
-  const regFormSubmissionsIterator = service.fetchPaginatedFormSubmissionsGenerator(
-    registrationFormId,
-    regFormSubmissionsNum,
-    {},
-    regFormSubmissionChunks
-  );
-
-  for await (const regFormSubmissionsResult of regFormSubmissionsIterator) {
-    if (regFormSubmissionsResult.isFailure) {
-      continue;
+  abortableBlock: {
+    const regForm = await service.fetchSingleForm(registrationFormId);
+    if (regForm.isFailure) {
+      endTime = Date.now();
+      yield createMetric(
+        config.uuid,
+        startTime,
+        endTime,
+        evaluatedSubmissions,
+        notModifiedWithoutError,
+        notModifiedWithError,
+        modified
+      );
+      return;
     }
-    const regFormSubmissions = regFormSubmissionsResult.getValue();
-    const updateRegFormSubmissionsPromises = (regFormSubmissions as RegFormSubmission[]).map(
-      async (regFormSubmission) => {
-        evaluatedSubmissions++;
-        const facilityId = regFormSubmission._id;
-        const mostRecentVisitResult = await getMostRecentVisitDateForFacility(
-          service,
-          facilityId,
-          visitformId,
-          logger
-        );
-        if (mostRecentVisitResult.isFailure) {
-          notModifiedWithError++;
-          return;
+    const regFormSubmissionsNum = regForm.getValue()[numOfSubmissionsAccessor];
+    const regFormSubmissionsIterator = service.fetchPaginatedFormSubmissionsGenerator(
+      registrationFormId,
+      regFormSubmissionsNum,
+      {},
+      regFormSubmissionChunks
+    );
+
+    for await (const regFormSubmissionsResult of regFormSubmissionsIterator) {
+      if (regFormSubmissionsResult.isFailure) {
+        if (regFormSubmissionsResult.errorCode === Sig.ABORT_EVALUATION) {
+          break abortableBlock;
         }
-        const timeDifference = computeTimeToKnow(mostRecentVisitResult);
-        const color = colorDecider(timeDifference, regFormSubmission);
-        if (color) {
-          if (regFormSubmission[markerColorAccessor] === color) {
-            notModifiedWithoutError++;
-            logger?.(
-              createInfoLog(
-                `facility _id: ${facilityId} submission already has the correct color, no action needed`
-              )
-            );
-          } else {
-            const uploadMarkerResult = await upLoadMarkerColor(
-              service,
-              registrationFormId,
-              regFormSubmission,
-              color
-            );
-            if (uploadMarkerResult.isFailure) {
-              notModifiedWithError++;
+        continue;
+      }
+      const regFormSubmissions = regFormSubmissionsResult.getValue();
+      const updateRegFormSubmissionsPromises = (regFormSubmissions as RegFormSubmission[]).map(
+        async (regFormSubmission) => {
+          evaluatedSubmissions++;
+          const facilityId = regFormSubmission._id;
+          const mostRecentVisitResult = await getMostRecentVisitDateForFacility(
+            service,
+            facilityId,
+            visitformId,
+            logger
+          );
+          if (mostRecentVisitResult.isFailure) {
+            notModifiedWithError++;
+            return;
+          }
+          const timeDifference = computeTimeToKnow(mostRecentVisitResult);
+          const color = colorDecider(timeDifference, regFormSubmission);
+          if (color) {
+            if (regFormSubmission[markerColorAccessor] === color) {
+              notModifiedWithoutError++;
+              logger?.(
+                createInfoLog(
+                  `facility _id: ${facilityId} submission already has the correct color, no action needed`
+                )
+              );
             } else {
-              modified++;
+              const uploadMarkerResult = await upLoadMarkerColor(
+                service,
+                registrationFormId,
+                regFormSubmission,
+                color
+              );
+              if (uploadMarkerResult.isFailure) {
+                notModifiedWithError++;
+              } else {
+                modified++;
+              }
             }
           }
         }
-      }
+      );
+
+      await Promise.allSettled(updateRegFormSubmissionsPromises);
+    }
+    endTime = Date.now();
+
+    logger?.(
+      createInfoLog(
+        `Finished form pair {regFormId: ${config.formPair.regFormId}, visitFormId: ${config.formPair.visitFormId}}`
+      )
     );
-
-    await Promise.allSettled(updateRegFormSubmissionsPromises);
   }
-  endTime = Date.now();
-
-  logger?.(
-    createInfoLog(
-      `Finished form pair {regFormId: ${config.formPair.regFormId}, visitFormId: ${config.formPair.visitFormId}}`
-    )
-  );
 
   yield createMetric(
     config.uuid,
@@ -145,8 +151,7 @@ export async function evaluate(config: Omit<Config, 'schedule'>) {
   const pendingMetric = ReadMetric(config.uuid) as Metric | undefined;
   let finalMetric;
   // we'll run the pipeline if a metric does not exist or it exists but has an endTime
-  console.log({ pendingMetric });
-  const taskIsRunning = isPipelineRunningFromMetric(pendingMetric);
+  const taskIsRunning = isPipelineRunning(pendingMetric);
   if (!taskIsRunning) {
     for await (const metric of baseEvaluate(config)) {
       WriteMetric(metric);

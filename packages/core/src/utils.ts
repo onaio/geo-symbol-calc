@@ -106,6 +106,11 @@ export const validateConfigs = (config: Config) => {
   return configValidationSchema.validateSync(config);
 };
 
+// Error Codes:
+export enum Sig {
+  ABORT_EVALUATION = 'abort_evaluation'
+}
+
 /** This is a generic interface that describes the output (or ... Result) of
  * a function.
  *
@@ -118,9 +123,10 @@ export class Result<T> {
   public isSuccess: boolean;
   public isFailure: boolean;
   public error: string;
+  public errorCode?: Sig;
   private _value: T;
 
-  private constructor(isSuccess: boolean, error?: string, value?: T) {
+  private constructor(isSuccess: boolean, error?: string, value?: T, sig?: Sig) {
     if (isSuccess && error) {
       throw new Error(`InvalidOperation: A result cannot be 
         successful and contain an error`);
@@ -136,6 +142,7 @@ export class Result<T> {
     this.error = error!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._value = value!;
+    this.errorCode = sig;
 
     Object.freeze(this);
   }
@@ -152,8 +159,8 @@ export class Result<T> {
     return new Result<U>(true, undefined, value);
   }
 
-  public static fail<U>(error: string): Result<U> {
-    return new Result<U>(false, error);
+  public static fail<U>(error: string, code?: Sig): Result<U> {
+    return new Result<U>(false, error, undefined, code);
   }
 }
 
@@ -253,7 +260,7 @@ export const defaultWriteMetric: WriteMetric = (metric: Metric) => {
   evaluatingTasks[metric.configId] = metric;
 };
 
-export function isPipelineRunningFromMetric(metric: Metric) {
+export function isPipelineRunning(metric: Metric | undefined) {
   if (metric) {
     const endDate = metric.endTime;
     if (endDate !== null) {

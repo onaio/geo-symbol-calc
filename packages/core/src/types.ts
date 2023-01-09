@@ -45,6 +45,8 @@ export interface Config {
   writeMetric: WriteMetric;
   // read metric information as stored by writeMetric
   readMetric: ReadMetric;
+  // Abort controller to abort evaluation of this pipeline
+  requestController: AbortController;
 }
 
 export enum PriorityLevel {
