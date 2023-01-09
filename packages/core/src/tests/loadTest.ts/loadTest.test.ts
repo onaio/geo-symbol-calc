@@ -14,7 +14,7 @@ afterAll(() => {
   server?.close();
 });
 
-xit('load test on submissions', async () => {
+test('load test on submissions', async () => {
   const loggerMock = jest.fn();
   const configs = createConfigs(loggerMock);
   const thisConfigs = {

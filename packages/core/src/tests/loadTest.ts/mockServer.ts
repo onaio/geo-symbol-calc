@@ -36,55 +36,53 @@ function generateRegFormSubmissions() {
 function generateLotsRegFormSubmissions(submissionsNum: number) {
   const submissions: any[] = [];
   for (let i = 1; i <= submissionsNum; i++) {
-    submissions.push(generateRegFormSubmissions());
+    const submission = generateRegFormSubmissions();
+    submissions.push(submission);
   }
   return submissions;
 }
 
-function generateVisitFormSubsForFacility(facilitId: number, geoLocation = {}) {
-  function generateSingleVisitSub() {
-    const defualtStructure = form3624Submissions[0];
-    const uuid = datatype.uuid();
-    const dateOfVisit = date.past();
-    const formatVisitDate = (date: Date) =>
-      `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDay()}`;
-    return {
-      ...defualtStructure,
-      _id: datatype.uuid(),
-      _uuid: uuid,
-      facility: facilitId,
-      'meta/instanceID': `uuid:${uuid}`,
-      'meta/deprecatedID': `uuid:${datatype.uuid()}`,
-      _geolocation: geoLocation,
-      date_of_visit: formatVisitDate(dateOfVisit)
-    };
-  }
-
-  return generateSingleVisitSub();
+function generateSingleVisitSub(facilitId: number, geoLocation = {}) {
+  const defualtStructure = form3624Submissions[0];
+  const uuid = datatype.uuid();
+  const dateOfVisit = date.past();
+  const formatVisitDate = (date: Date) =>
+    `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDay()}`;
+  return {
+    ...defualtStructure,
+    _id: datatype.uuid(),
+    _uuid: uuid,
+    facility: facilitId,
+    'meta/instanceID': `uuid:${uuid}`,
+    'meta/deprecatedID': `uuid:${datatype.uuid()}`,
+    _geolocation: geoLocation,
+    date_of_visit: formatVisitDate(dateOfVisit)
+  };
 }
 
-const benchmark = 10000;
+const benchmark = 1000;
 
 // start mock http server here.
 
-app.get(`${formEndpoint}/3623`, (req, res) => {
+app.get(`/${formEndpoint}/3623`, (req, res) => {
   res.send(generateRegForm(benchmark));
 });
 
-app.get(`${submittedDataEndpoint}/3623`, (req, res) => {
-  const pageSize = Number(req.query.pageSize);
+app.get(`/${submittedDataEndpoint}/3623`, (req, res) => {
+  const pageSize = Number(req.query['page_size']);
   const subs = generateLotsRegFormSubmissions(pageSize);
   res.send(subs);
 });
 
-app.get(`${submittedDataEndpoint}/3624`, (req, res) => {
+app.get(`/${submittedDataEndpoint}/3624`, (req, res) => {
   const query = req.query.query as string;
   const QueryParts = split(query, ':');
   const facilityId = Number(trim(QueryParts[1], '} '));
-  res.send(generateVisitFormSubsForFacility(facilityId));
+  const visitMockSubmission = generateSingleVisitSub(facilityId);
+  res.send([visitMockSubmission]);
 });
 
-app.post(editSubmissionEndpoint, (req, res) => {
+app.post(`/${editSubmissionEndpoint}`, (req, res) => {
   res.send({});
 });
 
