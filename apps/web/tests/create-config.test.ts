@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { createdConfig1 } from './fixtureData/index.ts';
 
 test('test', async ({ page }) => {
-	// Go to http://localhost:4173/
-	await page.goto('http://localhost:4173/');
+	await page.goto('/');
 
 	// Click #navbarNav >> text=Create Config
 	await page.locator('#navbarNav >> text=Create Config').click();
@@ -12,7 +12,7 @@ test('test', async ({ page }) => {
 	await page.locator('text=Create Symbology configs form');
 
 	/** test form validation */
-	await page.locator('text=Generate Json').click();
+	await page.locator('text=Save Configuration').click();
 	// Click text=Geo point registration form is required
 	await page.locator('text=Geo point registration form is required').click();
 	// Click text=Visit form field is required
@@ -50,11 +50,11 @@ test('test', async ({ page }) => {
 	// Fill input[name="schedule"]
 	await page.locator('input[name="schedule"]').fill('*/5 * * * *');
 
-	// Click input[name="symbolConfig0\.frequency"]
-	await page.locator('input[name="symbolConfig0\\.frequency"]').click();
+	// Click input[name="symbolConfig[0].frequency"]
+	await page.locator('input[name="symbolConfig[0].frequency"]').click();
 
 	// Fill input[name="symbolConfig0\.frequency"]
-	await page.locator('input[name="symbolConfig0\\.frequency"]').fill('3');
+	await page.locator('input[name="symbolConfig[0].frequency"]').fill('3');
 
 	// Click input[name="symbolConfig\[0\]\.symbologyOnOverflow\[0\]\.overFlowDays"]
 	await page
@@ -108,13 +108,13 @@ test('test', async ({ page }) => {
 	await page.locator('text=+ Add another priority level').click();
 
 	// Select Medium
-	await page.locator('select[name="symbolConfig1\\.priorityLevel"]').selectOption('Medium');
+	await page.locator('select[name="symbolConfig[1].priorityLevel"]').selectOption('Medium');
 
 	// Click input[name="symbolConfig1\.frequency"]
-	await page.locator('input[name="symbolConfig1\\.frequency"]').click();
+	await page.locator('input[name="symbolConfig[1].frequency"]').click();
 
 	// Fill input[name="symbolConfig1\.frequency"]
-	await page.locator('input[name="symbolConfig1\\.frequency"]').fill('2');
+	await page.locator('input[name="symbolConfig[1].frequency"]').fill('2');
 
 	// Click input[name="symbolConfig\[1\]\.symbologyOnOverflow\[0\]\.overFlowDays"]
 	await page
@@ -125,7 +125,7 @@ test('test', async ({ page }) => {
 	await page.locator('div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > .col-sm-9').click();
 
 	// Fill input[name="symbolConfig1\.frequency"]
-	await page.locator('input[name="symbolConfig1\\.frequency"]').fill('10');
+	await page.locator('input[name="symbolConfig[1].frequency"]').fill('10');
 
 	// Click input[name="symbolConfig\[1\]\.symbologyOnOverflow\[0\]\.overFlowDays"]
 	await page
@@ -142,57 +142,39 @@ test('test', async ({ page }) => {
 		.locator('input[name="symbolConfig\\[1\\]\\.symbologyOnOverflow\\[0\\]\\.color"]')
 		.click();
 
-	// Click text=Generate Json
-	await page.locator('text=Generate Json').click();
-
 	/** whats the generated geojson */
 	const pre = await page.locator('pre');
 	const textContent = await pre.innerText();
-	expect(JSON.parse(textContent)).toEqual(createdConfig1);
+	expect(JSON.parse(textContent)).toMatchObject({ ...createdConfig1, uuid: expect.any(String) });
 
-	// Click text=Copy Config
-	page.once('dialog', (dialog) => {
-		console.log(`Dialog message: ${dialog.message()}`);
-		dialog.dismiss().catch(() => {
-			return;
-		});
-	});
+	// Click text=Generate Json
+	await page.locator('text=Save configuration').click();
 
-	await page.locator('text=Copy Config').click();
+	// // Click text=Copy Config
+	// page.once('dialog', (dialog) => {
+	// 	console.log(`Dialog message: ${dialog.message()}`);
+	// 	expect(dialog.message).toEqual("");
+	// 	dialog.dismiss().catch(() => {
+	// 		return;
+	// 	});
+	// });
+
+	await page.goto('/');
+
+	// Click #navbarNav >> text=Workflows
+	await page.locator('#navbarNav >> text=Workflows').click();
+	await expect(page).toHaveURL('http://localhost:4173/workflows');
+
+	// Click text=Configured Pipeline list
+	await page.locator('text=Configured Pipeline list').click();
+
+	await page.locator('text=Manually Trigger workflow').click();
+
+	// Click text=Manually Trigger workflow
+	// page.once('dialog', (dialog) => {
+	// 	expect(dialog.message()).toEqual("")
+	// 	dialog.dismiss().catch(() => {
+	// 		return;
+	// 	});
+	// });
 });
-
-const createdConfig1 = {
-	baseUrl: 'https://stage-api.ona.io',
-	formPair: {
-		regFormId: '01',
-		visitFormId: '02'
-	},
-	apiToken: '<Replace with api token>',
-	symbolConfig: [
-		{
-			symbologyOnOverflow: [
-				{
-					color: '#1eff00',
-					overFlowDays: '1'
-				},
-				{
-					overFlowDays: '3',
-					color: '#fcdb03'
-				}
-			],
-			priorityLevel: 'Very_High',
-			frequency: 3
-		},
-		{
-			priorityLevel: 'Medium',
-			frequency: 10,
-			symbologyOnOverflow: [
-				{
-					overFlowDays: '',
-					color: '#000000'
-				}
-			]
-		}
-	],
-	schedule: '*/5 * * * *'
-};
