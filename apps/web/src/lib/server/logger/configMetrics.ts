@@ -40,6 +40,10 @@ class MetricStoreStack {
 	}
 }
 
+function writeMetricsToFile(metrics: unknown) {
+	fs.writeFileSync(metricsJsonFile, JSON.stringify(metrics, null, 2));
+}
+
 /** Dumps metric json to metric json db file
  * @param metric - metric to be written to the json dump file.
  */
@@ -56,7 +60,7 @@ export function writePripelineMetrics(metric: Metric) {
 	metricsStack.push(metric);
 
 	allMetrics[configId] = metricsStack.getSequence();
-	fs.writeFileSync(metricsJsonFile, JSON.stringify(allMetrics));
+	writeMetricsToFile(allMetrics);
 }
 
 /** Reads the metrics json db file and gets metric information for configured pipelines.
@@ -107,4 +111,17 @@ export function readMetricOverride(configId?: string) {
 	}
 	const allPipelineMetricsResult = readPipelineMetrics();
 	return allPipelineMetricsResult.isFailure ? [] : allPipelineMetricsResult.getValue();
+}
+
+/** remove metrics for given config
+ * @param configId - id for pipeline whose metrics should be deleted.
+ */
+export function deleteMetricForConfig(configId: string) {
+	const allMetricsResult = readPipelineMetrics();
+	if (allMetricsResult.isFailure) {
+		return allMetricsResult;
+	}
+	const allMetrics = allMetricsResult.getValue();
+	delete allMetrics[configId];
+	writeMetricsToFile(allMetrics);
 }
