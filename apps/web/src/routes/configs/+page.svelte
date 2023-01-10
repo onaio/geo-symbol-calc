@@ -26,7 +26,7 @@
 
 	const preDeterminedPriorityLevels = Object.values(PriorityLevel);
 
-	const { form, errors, handleChange, handleSubmit } = createForm({
+	const { form, errors, handleChange, handleSubmit, isValid } = createForm({
 		initialValues: getInitialValues(data.config),
 		validationSchema: configValidationSchema,
 		onSubmit: (values) => {
@@ -302,7 +302,7 @@
 			</div>
 
 			<div class="text-center">
-				<button type="submit" class="btn btn-primary mt-3">Save to Configuration file</button>
+				<button type="submit" class="btn btn-primary mt-3">Save configuration</button>
 			</div>
 		</form>
 	</div>
@@ -311,6 +311,7 @@
 		<div class="text-center">
 			<button
 				class="btn btn-outline-primary btn-sm"
+				disabled={!isValid}
 				on:click={() => {
 					navigator.clipboard.writeText(generatedJson);
 					toast.push('copied')
