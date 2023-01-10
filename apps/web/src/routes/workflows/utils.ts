@@ -34,6 +34,9 @@ export function parseForTable(singleConfig: ClientSideSingleSymbolConfig) {
 	return { tableHeaders, tableRows, colorsColSpan };
 }
 
+/** Converts a cron syntax string to huma readable string
+ * @param cronString - cron-like syntax string.
+ */
 export function convertCronToHuman(cronString: string) {
 	const cronstrueOptions = {
 		verbose: true,
@@ -44,4 +47,11 @@ export function convertCronToHuman(cronString: string) {
 	} catch (err) {
 		return '';
 	}
+}
+
+/** creates a human readable date time string
+ * @param timeStamp - time as timestamp to be converted.
+ */
+export function formatTimestamp(timeStamp: number) {
+	return new Date(timeStamp).toLocaleString();
 }

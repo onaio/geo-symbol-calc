@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { range } from 'lodash-es';
-	import { convertCronToHuman, parseForTable } from './utils';
+	import { convertCronToHuman, formatTimestamp, parseForTable } from './utils';
 	import PageHeader from '$lib/shared/components/PageHeader.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { toast } from '@zerodevx/svelte-toast';
+	import { isPipelineRunning } from '$lib/shared/utils';
 
 	export let data: PageData;
 
+	// callback for manual trigger user action.
 	const manualTrigger = async (uuid: string) => {
 		const sParams = new URLSearchParams({
 			uuid
@@ -24,6 +26,7 @@
 			});
 	};
 
+	// callback for edit trigger user action.
 	const editTrigger = async (uuid: string) => {
 		const sParams = new URLSearchParams({
 			uuid
@@ -32,6 +35,7 @@
 		goto(fullUrl);
 	};
 
+	// callback for delete trigger user action.
 	const deleteTrigger = async (uuid: string) => {
 		const sParams = new URLSearchParams({
 			uuid
@@ -52,6 +56,10 @@
 	};
 </script>
 
+<!-- <svelte:head>
+	<meta http-equiv="refresh" content="5" />
+</svelte:head> -->
+
 {#if data.configs.length === 0}
 	<main>
 		<PageHeader pageTitle="Configured Pipeline list" />
@@ -64,11 +72,16 @@
 {:else}
 	<main>
 		<PageHeader pageTitle="Configured Pipeline list" />
-		{#each data.configs as config}
+		{#each data.configs as config, idex}
 			{@const { tableHeaders, tableRows, colorsColSpan } = parseForTable(config)}
+			{@const metric = config.metric}
+			{@const pipelineIsRunning = isPipelineRunning(metric)}
 			<div class="card my-3">
 				<div class="card-header d-flex justify-content-end gap-2">
-					<button on:click={() => manualTrigger(config.uuid)} class="btn btn-outline-primary btn-sm"
+					<button
+						on:click={() => manualTrigger(config.uuid)}
+						disabled={pipelineIsRunning}
+						class="btn btn-outline-primary btn-sm"
 						><i class="fas fa-cogs" /> Manually Trigger workflow</button
 					>
 					<button on:click={() => editTrigger(config.uuid)} class="btn btn-outline-primary btn-sm"
@@ -122,6 +135,63 @@
 						<span class="card-text d-inline-block me-2 text-muted">Schedule:</span><span
 							class="card-text">{convertCronToHuman(config.schedule)}</span
 						>
+					</div>
+					<hr />
+					<div class="accordion" id={`metrics-${idex}`}>
+						<div class="accordion-item">
+							<h2 class="accordion-header" id={`heading-${idex}`}>
+								<button
+									class="accordion-button"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target={`#collapse-${idex}`}
+									aria-expanded="true"
+									aria-controls={`collapse-${idex}`}
+								>
+									Metrics for the last run
+								</button>
+							</h2>
+							<div
+								id={`collapse-${idex}`}
+								class="accordion-collapse collapse"
+								aria-labelledby={`heading-${idex}`}
+								data-bs-parent={`#metrics-${idex}`}
+							>
+								<div class="accordion-body">
+									{#if metric === undefined}
+										<div class="card">
+											<div class="card-body">
+												<span class="text-danger"
+													>No previous run information was found for this Pipeline.</span
+												>
+											</div>
+										</div>
+									{:else}
+										{#if pipelineIsRunning}
+											<span class="text-info">Pipeline is currently running.</span>
+										{/if}
+										<dl class="row">
+											<dt class="col-sm-9">Started</dt>
+											<dd class="col-sm-3">
+												{metric?.startTime ? formatTimestamp(metric?.startTime) : ' - '}
+											</dd>
+											<dt class="col-sm-9">Ended</dt>
+											<dd class="col-sm-3">
+												{metric?.endTime ? formatTimestamp(metric?.endTime) : ' - '}
+											</dd>
+											<dt class="col-sm-9">No. of registration submissions evaluated</dt>
+											<dd class="col-sm-3">{metric?.evaluated}</dd>
+											<dt class="col-sm-9">No. of registration submissions modified</dt>
+											<dd class="col-sm-3">{metric?.modified}</dd>
+											<dt class="col-sm-9">
+												No. of registration submissions not modified due to error
+											</dt>
+											<dd class="col-sm-3">{metric?.notModdifiedDueError}</dd>
+										</dl>
+									{/if}
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
