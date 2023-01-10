@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { json } from '@sveltejs/kit';
 import { getAllSymbologyConfigs } from '$lib/server/appConfig';
 import { keyBy } from 'lodash-es';
+import { deleteMetricForConfig } from '$lib/server/logger/configMetrics';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -57,6 +58,7 @@ export async function DELETE({ url }) {
 
 	data.allSymbologyConfigs = leftSymbolConfigs;
 	fs.writeFileSync(localConfigFile, JSON.stringify(data, null, 2));
+	deleteMetricForConfig(uuid);
 	return json({});
 }
 
