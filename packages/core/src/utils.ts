@@ -177,17 +177,15 @@ export async function getMostRecentVisitDateForFacility(
   };
 
   // fetch the most recent visit submission for this facility
-  const visitSubmissionsResult = await service.fetchPaginatedFormSubmissions<VisitFormSubmission>(
-    visitFormId,
-    1,
-    query,
-    1
-  );
+  const formSubmissionIterator =
+    service.fetchPaginatedFormSubmissionsGenerator<VisitFormSubmission>(visitFormId, 1, query, 1);
+
+  const visitSubmissionsResult = await formSubmissionIterator.next().then(res => res.value) as Result<VisitFormSubmission[]>;
 
   if (visitSubmissionsResult.isFailure) {
     logger?.(
       createErrorLog(
-        `Operationto fetch submission for facility: ${facilityId} failed with error: ${visitSubmissionsResult.error}`
+        `Operation to fetch submission for facility: ${facilityId} failed with error: ${visitSubmissionsResult.error}`
       )
     );
     return Result.fail<timestamp>(visitSubmissionsResult.error);
@@ -211,7 +209,7 @@ export async function getMostRecentVisitDateForFacility(
   }
 }
 
-export function computeTimeToKnow(dateResult: Result<timestamp> | Result<undefined>) {
+export function computeTimeToNow(dateResult: Result<timestamp> | Result<undefined>) {
   let recentVisitDiffToNow = Infinity;
 
   if (dateResult.isFailure) {
@@ -235,7 +233,8 @@ export const createMetric = (
   evaluated: number,
   notModifiedWithoutError: number,
   notModdifiedDueError: number,
-  modified: number
+  modified: number,
+  totalSubmissions?: number
 ) => {
   return {
     configId: uuid,
@@ -244,7 +243,8 @@ export const createMetric = (
     evaluated,
     notModifiedWithoutError,
     notModdifiedDueError,
-    modified
+    modified,
+    totalSubmissions
   };
 };
 

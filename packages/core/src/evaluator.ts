@@ -2,7 +2,7 @@ import { OnaApiService, upLoadMarkerColor } from './services';
 import { Config, Metric, RegFormSubmission } from './types';
 import {
   colorDeciderFactory,
-  computeTimeToKnow,
+  computeTimeToNow,
   createErrorLog,
   createInfoLog,
   createMetric,
@@ -29,6 +29,7 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
   let notModifiedWithError = 0;
   let notModifiedWithoutError = 0;
   let modified = 0;
+  let totalRegFormSubmissions = 0;
 
   // allows us to continously and progressively get reports on number of submissions evaluated.
   yield createMetric(
@@ -49,7 +50,9 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
   const colorDecider = colorDeciderFactory(symbolConfig, logger);
 
   abortableBlock: {
+    const start = performance.now(); //
     const regForm = await service.fetchSingleForm(registrationFormId);
+    const stop1RegForm = performance.now(); //
     if (regForm.isFailure) {
       endTime = Date.now();
       yield createMetric(
@@ -64,13 +67,14 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
       return;
     }
     const regFormSubmissionsNum = regForm.getValue()[numOfSubmissionsAccessor];
+    totalRegFormSubmissions = regFormSubmissionsNum;
     const regFormSubmissionsIterator = service.fetchPaginatedFormSubmissionsGenerator(
       registrationFormId,
       regFormSubmissionsNum,
       {},
       regFormSubmissionChunks
     );
-
+    const stop2StartingPageFetch = performance.now();
     for await (const regFormSubmissionsResult of regFormSubmissionsIterator) {
       if (regFormSubmissionsResult.isFailure) {
         if (regFormSubmissionsResult.errorCode === Sig.ABORT_EVALUATION) {
@@ -79,8 +83,8 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
         continue;
       }
       const regFormSubmissions = regFormSubmissionsResult.getValue();
-      const updateRegFormSubmissionsPromises = (regFormSubmissions as RegFormSubmission[]).map(
-        async (regFormSubmission) => {
+      const updateRegFormSubmissionsPromises = (regFormSubmissions as RegFormSubmission[]).map((regFormSubmission) => 
+        async () => {
           evaluatedSubmissions++;
           const facilityId = regFormSubmission._id;
           const mostRecentVisitResult = await getMostRecentVisitDateForFacility(
@@ -93,7 +97,7 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
             notModifiedWithError++;
             return;
           }
-          const timeDifference = computeTimeToKnow(mostRecentVisitResult);
+          const timeDifference = computeTimeToNow(mostRecentVisitResult);
           const color = colorDecider(timeDifference, regFormSubmission);
           if (color) {
             if (regFormSubmission[markerColorAccessor] === color) {
@@ -116,11 +120,24 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
                 modified++;
               }
             }
+          } else {
+            notModifiedWithoutError++;
           }
         }
       );
 
-      await Promise.allSettled(updateRegFormSubmissionsPromises);
+      const stopStartEdit = performance.now(); //
+      let cursor = 0;
+      const postChunks = 100;
+      while(cursor <= updateRegFormSubmissionsPromises.length){
+        const end = cursor + postChunks;
+        const chunksToSend = updateRegFormSubmissionsPromises.slice(cursor, end);
+        cursor = cursor + postChunks
+        await Promise.allSettled(chunksToSend.map(x => x()));
+      }
+      //await Promise.allSettled(updateRegFormSubmissionsPromises);
+      const stopEndEdit = performance.now(); //
+      logger?.(createInfoLog(`evaluating page: from ${stopStartEdit} to ${stopEndEdit} i.e in: ${stopEndEdit - stopStartEdit}`))
     }
     endTime = Date.now();
 
@@ -138,7 +155,8 @@ export async function* baseEvaluate(config: Omit<Config, 'schedule'>) {
     evaluatedSubmissions,
     notModifiedWithoutError,
     notModifiedWithError,
-    modified
+    modified,
+    totalRegFormSubmissions
   );
   return;
 }

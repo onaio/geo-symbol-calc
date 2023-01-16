@@ -1803,6 +1803,7 @@ __metadata:
     eslint-config-custom: "*"
     express: ^4.18.2
     faker: 5.5.3
+    fetch-retry: ^5.0.3
     jest: ^29.1.2
     lodash-es: ^4.17.21
     nock: ^13.2.9
@@ -4329,6 +4330,13 @@ eslint-config-turbo@latest:
   version: 4.2.3
   resolution: "fecha@npm:4.2.3"
   checksum: f94e2fb3acf5a7754165d04549460d3ae6c34830394d20c552197e3e000035d69732d74af04b9bed3283bf29fe2a9ebdcc0085e640b0be3cc3658b9726265e31
+  languageName: node
+  linkType: hard
+
+"fetch-retry@npm:^5.0.3":
+  version: 5.0.3
+  resolution: "fetch-retry@npm:5.0.3"
+  checksum: b4eebc04bd41651417e89ae9287e5b9e5421970ce07058c6e1e22f7d9c1cd5f935fc39a328fd66b433247c0ae1bb8a6b2d48c073d5a9f911992f72c5d311b14d
   languageName: node
   linkType: hard
 

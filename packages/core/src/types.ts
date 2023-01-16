@@ -122,6 +122,7 @@ export interface Metric {
   notModifiedWithoutError: number;
   notModdifiedDueError: number;
   modified: number;
+  totalSubmissions?: number
 }
 
 export interface ReadMetric {

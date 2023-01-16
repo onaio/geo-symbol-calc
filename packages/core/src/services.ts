@@ -8,15 +8,35 @@ import {
 import { v4 } from 'uuid';
 import { BaseFormSubmission, Color, Form, LogFn, RegFormSubmission } from './types';
 import { createErrorLog, createInfoLog, createVerboseLog, Result } from './utils';
+import fetchRetry, { RequestInitWithRetry } from 'fetch-retry';
 
-export const customFetch: typeof fetch = async (...rest) => {
-  const response = await fetch(...rest);
+const persistentFetch = fetchRetry(fetch);
+
+export const customFetch = async (input: RequestInfo, init?: RequestInit ) => {
+  // The exponential backoff strategy can be hardcoded, should it be left to the calling function.
+  // post requests are not idempotent
+  const numOfRetries = 10;
+  const delayConstant = 500 //ms 
+  const requestOptionsWithRetry: RequestInitWithRetry = {
+    ...init,
+    retries: numOfRetries,
+    retryOn: [502, 500],
+    retryDelay: function(attempt, error) {
+      console.log(`#######################33attempt-${attempt} - ${error}`)
+      return Math.pow(2, attempt) * delayConstant;
+    },
+  }
+  const response = await persistentFetch(input, requestOptionsWithRetry).catch(err => {
+    console.log('===>', err);
+    throw Error(`${err.type}: ${err.name}: ${err.message}.`);
+  })
   if (response?.ok) {
     return response;
   }
   const text = await response.text();
   throw Error(`${response.status}: ${text}: Network request failed.`);
 };
+
 
 /** Service class that abstracts function calls to ona data api */
 export class OnaApiService {
@@ -125,8 +145,9 @@ export class OnaApiService {
       };
       const sParams = new URLSearchParams(query);
       const paginatedSubmissionsUrl = `${fullSubmissionsUrl}?${sParams.toString()}`;
-
+      
       page = page + 1;
+      const stop1StartFetchPage = performance.now() //
       yield await customFetch(paginatedSubmissionsUrl, { ...this.getCommonFetchOptions() })
         .then((res) => {
           return (res.json() as Promise<FormSubmissionT[]>).then((res) => {
@@ -145,8 +166,13 @@ export class OnaApiService {
             )
           );
           return Result.fail<FormSubmissionT[]>(err);
+        }).finally(() => {
+          const stop2EndFetchPage = performance.now();
+          if(pageSize >100){
+            this.logger?.(createInfoLog(`Fetched page: ${page}: from ${stop1StartFetchPage} to ${stop2EndFetchPage} i.e in: ${stop2EndFetchPage - stop1StartFetchPage}`))
+          }
         });
-    } while (page * pageSize <= totalSubmissions);
+    } while(page * pageSize <= totalSubmissions);
   }
 
   /** makes single reqest to edit a single form submission
@@ -172,7 +198,8 @@ export class OnaApiService {
       }
     };
     const fullEditSubmissionUrl = `${this.baseUrl}/${editSubmissionPath}`;
-
+    
+    const stop1StartEdit = performance.now();
     return await customFetch(fullEditSubmissionUrl, {
       ...this.getCommonFetchOptions(),
       method: 'POST',
@@ -189,12 +216,16 @@ export class OnaApiService {
         });
       })
       .catch((err) => {
+        console.log('==>', {err})
         this.logger?.(
           createErrorLog(
             `Failed to edit sumbission with _id: ${submissionPayload._id} for form with id: ${formId} with err: ${err.message}`
           )
         );
         return Result.fail(err);
+      }).finally(() => {
+        const stop1StopEdit = performance.now();
+        this.logger?.(createInfoLog(`Editing submission with _id: ${submissionPayload._id} took ${stop1StopEdit - stop1StartEdit}`))
       });
   }
 }

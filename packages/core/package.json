@@ -23,6 +23,7 @@
     "tsconfig": "*"
   },
   "dependencies": {
+    "fetch-retry": "^5.0.3",
     "lodash-es": "^4.17.21",
     "node-cron": "^3.0.2",
     "node-fetch": "^2.6",
