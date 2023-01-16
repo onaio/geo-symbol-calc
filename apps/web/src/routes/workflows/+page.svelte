@@ -137,64 +137,52 @@
 						>
 					</div>
 					<hr />
-					<div class="accordion" id={`metrics-${idex}`}>
-						<div class="accordion-item">
-							<h2 class="accordion-header" id={`heading-${idex}`}>
-								<button
-									class="accordion-button"
-									type="button"
-									data-bs-toggle="collapse"
-									data-bs-target={`#collapse-${idex}`}
-									aria-expanded="true"
-									aria-controls={`collapse-${idex}`}
-								>
-									Metrics for the last run
-								</button>
-							</h2>
-							<div
-								id={`collapse-${idex}`}
-								class="accordion-collapse collapse"
-								aria-labelledby={`heading-${idex}`}
-								data-bs-parent={`#metrics-${idex}`}
+					<h5>Metrics for the last run</h5>
+					{#if metric === undefined}
+					<div class="card">
+						<div class="card-body">
+							<span class="text-danger"
+								>No previous run information was found for this Pipeline.</span
 							>
-								<div class="accordion-body">
-									{#if metric === undefined}
-										<div class="card">
-											<div class="card-body">
-												<span class="text-danger"
-													>No previous run information was found for this Pipeline.</span
-												>
-											</div>
-										</div>
-									{:else}
-										{#if pipelineIsRunning}
-											<span class="text-info">Pipeline is currently running.</span>
-										{/if}
-										<dl class="row">
-											<dt class="col-sm-9">Started</dt>
-											<dd class="col-sm-3">
-												{metric?.startTime ? formatTimestamp(metric?.startTime) : ' - '}
-											</dd>
-											<dt class="col-sm-9">Ended</dt>
-											<dd class="col-sm-3">
-												{metric?.endTime ? formatTimestamp(metric?.endTime) : ' - '}
-											</dd>
-											<dt class="col-sm-9">No. of registration submissions evaluated</dt>
-											<dd class="col-sm-3">{metric?.evaluated}</dd>
-											<dt class="col-sm-9">No. of registration submissions modified</dt>
-											<dd class="col-sm-3">{metric?.modified}</dd>
-											<dt class="col-sm-9">
-												No. of registration submissions not modified due to error
-											</dt>
-											<dd class="col-sm-3">{metric?.notModdifiedDueError}</dd>
-										</dl>
-									{/if}
-								</div>
-							</div>
 						</div>
 					</div>
+				{:else}
+					{#if pipelineIsRunning}
+						<span class="text-info">Pipeline is currently running.</span>
+					{/if}
+					<dl class="row">
+						<dt class="col-sm-9">Started</dt>
+						<dd class="col-sm-3">
+							{metric?.startTime ? formatTimestamp(metric?.startTime) : ' - '}
+						</dd>
+						<dt class="col-sm-9">Ended</dt>
+						<dd class="col-sm-3">
+							{metric?.endTime ? formatTimestamp(metric?.endTime) : ' - '}
+						</dd>
+						<dt class="col-sm-9">Total no. of facilities</dt>
+						<dd class="col-sm-3">{metric?.totalSubmissions ?? ' - '}</dd>
+						<dt class="col-sm-9">No. of facilities evaluated</dt>
+						<dd class="col-sm-3">{metric?.evaluated}</dd>
+						<dt class="col-sm-9">No. of registration submissions modified</dt>
+						<dd class="col-sm-3">{metric?.modified}</dd>
+						<dt class="col-sm-9">
+							No. of registration submissions not modified due to error
+						</dt>
+						<dd class="col-sm-3">{metric?.notModdifiedDueError}</dd>
+						<dt class="col-sm-9">
+							No. of registration submissions not modified without error
+						</dt>
+						<dd class="col-sm-3">{metric?.notModifiedWithoutError}</dd>
+					</dl>
+				{/if}
 				</div>
 			</div>
 		{/each}
 	</main>
 {/if}
+
+<style scoped>
+	dt{
+		color: #5e5e5e;
+	}
+</style>

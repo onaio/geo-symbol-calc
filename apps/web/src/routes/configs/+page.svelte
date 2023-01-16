@@ -19,10 +19,14 @@
 	import { userTokenUrl } from '$lib/shared/constants';
 	import { toast } from '@zerodevx/svelte-toast'
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 
 	// props
 	/** @type {import('./$types').PageData} */
 	export let data;
+
+    
+    const isEdit = $page.url.searchParams.has('uuid');
 
 	const preDeterminedPriorityLevels = Object.values(PriorityLevel);
 
@@ -32,9 +36,9 @@
 		onSubmit: (values) => {
 			const filled = generateFilledData(values);
 			generatedJson = JSON.stringify(filled, null, 2);
-			const successMessage = initialValues.uuid ? 'Edited config' : "Added new config"
+			const successMessage = isEdit ? 'Edited config' : "Added new config"
 			fetch('/configs', {
-				method: initialValues.uuid ? 'PUT' : "POST",
+				method: isEdit ? 'PUT' : "POST",
 				body: JSON.stringify(filled),
 				headers: {
 					'content-type': 'application/json'

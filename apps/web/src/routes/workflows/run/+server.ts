@@ -17,6 +17,7 @@ export function GET({ url }) {
 	const associatedConfigs: Record<string, Config> = keyBy(getAllSymbologyConfigs(), 'uuid');
 
 	const configOfInterest = associatedConfigs[uuid];
+	console.log(JSON.stringify(configOfInterest));
 	if (!configOfInterest) {
 		throw error(
 			500,
@@ -26,6 +27,6 @@ export function GET({ url }) {
 
 	evaluate(configOfInterest);
 	return json({
-		message: 'Pipeline triggered asynchronously, This pipeline will run in the backgournd'
+		message: 'Pipeline triggered asynchronously, This pipeline will run in the background.'
 	});
 }

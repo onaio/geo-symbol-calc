@@ -13,8 +13,18 @@ export async function POST({ request }) {
 	const payload = await request.json();
 	const dataText = fs.readFileSync(localConfigFile);
 	const data = JSON.parse(dataText);
-	data.allSymbologyConfigs.push(payload);
-	fs.writeFileSync(localConfigFile, JSON.stringify(data, null, 2));
+	const { allSymbologyConfigs } = data;
+	const configsByUuid = keyBy(allSymbologyConfigs, 'uuid');
+	const newConfigs = {
+		...configsByUuid,
+		[payload.uuid]: payload
+	};
+	const newDataConfigs = {
+		...data,
+		allSymbologyConfigs: Object.values(newConfigs)
+	};
+
+	fs.writeFileSync(localConfigFile, JSON.stringify(newDataConfigs, null, 2));
 	return json({});
 }
 
@@ -23,23 +33,20 @@ export async function PUT({ request }) {
 	const payload = await request.json();
 	const dataText = fs.readFileSync(localConfigFile);
 	const data = JSON.parse(dataText);
-
-	// TODO - repeated code.
-	const clientSymbologyConfigs = getAllSymbologyConfigs();
-
-	const configsByKeys = keyBy(clientSymbologyConfigs, 'uuid');
-	const configOfInterestKey = payload.uuid;
-	const configOfInterest = configsByKeys[configOfInterestKey];
-
-	const newConfig = {
-		...configOfInterest,
-		...payload
+	const { allSymbologyConfigs } = data;
+	const configsByUuid = keyBy(allSymbologyConfigs, 'uuid');
+	const configToBeReplaced = configsByUuid[payload.uuid];
+	const newConfigs = {
+		...configsByUuid,
+		[payload.uuid]: { ...payload, apiToken: configToBeReplaced.apiToken }
+	};
+	console.log({ newConfigs }, configToBeReplaced.apiToken);
+	const newDataConfigs = {
+		...data,
+		allSymbologyConfigs: Object.values(newConfigs)
 	};
 
-	configsByKeys[configOfInterestKey] = newConfig;
-
-	data.allSymbologyConfigs = Object.values(configsByKeys);
-	fs.writeFileSync(localConfigFile, JSON.stringify(data, null, 2));
+	fs.writeFileSync(localConfigFile, JSON.stringify(newDataConfigs, null, 2));
 	return json({});
 }
 
