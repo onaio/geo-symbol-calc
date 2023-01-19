@@ -80,7 +80,7 @@
 				<div class="card-header d-flex justify-content-end gap-2">
 					<button
 						on:click={() => manualTrigger(config.uuid)}
-						disabled={pipelineIsRunning}
+						disabled={config.isRunning}
 						class="btn btn-outline-primary btn-sm"
 						><i class="fas fa-cogs" /> Manually Trigger workflow</button
 					>
@@ -147,7 +147,7 @@
 						</div>
 					</div>
 				{:else}
-					{#if pipelineIsRunning}
+					{#if config.isRunning}
 						<span class="text-info">Pipeline is currently running.</span>
 					{/if}
 					<dl class="row">

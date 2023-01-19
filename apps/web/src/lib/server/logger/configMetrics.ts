@@ -1,7 +1,7 @@
 /** Save configuration runs metrics to a file. */
 import fs from 'node:fs';
 import { metricsJsonFile } from '../constants';
-import { Result } from '@onaio/symbology-calc-core/src/utils';
+import { Result } from '@onaio/symbology-calc-core';
 import { LogMessageLevels, type Metric } from '@onaio/symbology-calc-core';
 import { geoSymbolLogger } from './winston';
 

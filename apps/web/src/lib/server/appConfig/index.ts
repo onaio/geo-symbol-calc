@@ -1,4 +1,4 @@
-import { validateConfigs } from '@onaio/symbology-calc-core/src/utils';
+import { PipelinesController, validateConfigs } from '@onaio/symbology-calc-core';
 import type { SingleApiSymbolConfig } from 'src/lib/shared/types';
 import { geoSymbolLogger } from '../logger/winston';
 import { allSymbolConfigsAccessor } from '$lib/server/constants';
@@ -46,3 +46,5 @@ export function getClientSideSymbologyConfigs() {
 		return { baseUrl, formPair, symbolConfig, schedule, uuid };
 	});
 }
+
+export const pipelineController = new PipelinesController(getAllSymbologyConfigs);
