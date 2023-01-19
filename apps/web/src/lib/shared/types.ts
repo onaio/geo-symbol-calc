@@ -8,5 +8,5 @@ export type SingleApiSymbolConfig = WebConfig;
 
 export type ClientSideSingleSymbolConfig = Pick<
 	Config,
-	'baseUrl' | 'formPair' | 'symbolConfig' | 'schedule'
+	'baseUrl' | 'visitFormId' | 'regFormId' | 'symbolConfig' | 'schedule'
 >;

@@ -24,7 +24,8 @@ export class ConfigRunner {
   async *transformGenerator() {
     const config = this.config;
     const {
-      formPair,
+      regFormId,
+      visitFormId,
       symbolConfig,
       logger,
       baseUrl,
@@ -34,7 +35,6 @@ export class ConfigRunner {
       regFormSubmissionChunks: facilityProcessingChunks
     } = config;
     const regFormSubmissionChunks = facilityProcessingChunks ?? 1000;
-    const { regFormId: registrationFormId, visitFormId: visitformId } = formPair;
 
     this.running = true;
 
@@ -59,7 +59,7 @@ export class ConfigRunner {
     const colorDecider = colorDeciderFactory(symbolConfig, logger);
 
     abortableBlock: {
-      const regForm = await service.fetchSingleForm(registrationFormId);
+      const regForm = await service.fetchSingleForm(regFormId);
       if (regForm.isFailure) {
         yield createMetric(
           evaluatedSubmissions,
@@ -69,14 +69,13 @@ export class ConfigRunner {
           totalRegFormSubmissions,
           true
         );
-        // return;
       }
       const regFormSubmissionsNum = regForm.getValue()[numOfSubmissionsAccessor];
       totalRegFormSubmissions = regFormSubmissionsNum;
 
       // fetches submissions for the first form.
       const regFormSubmissionsIterator = service.fetchPaginatedFormSubmissionsGenerator(
-        registrationFormId,
+        regFormId,
         regFormSubmissionsNum,
         {},
         regFormSubmissionChunks
@@ -96,8 +95,8 @@ export class ConfigRunner {
             const modificationStatus = await transformFacility(
               service,
               regFormSubmission,
-              registrationFormId,
-              visitformId,
+              regFormId,
+              visitFormId,
               colorDecider,
               logger
             );
@@ -123,7 +122,7 @@ export class ConfigRunner {
     }
     logger?.(
       createInfoLog(
-        `Finished form pair {regFormId: ${config.formPair.regFormId}, visitFormId: ${config.formPair.visitFormId}}`
+        `Finished form pair {regFormId: ${config.regFormId}, visitFormId: ${config.visitFormId}}`
       )
     );
     yield createMetric(
@@ -135,7 +134,6 @@ export class ConfigRunner {
       true
     );
     this.running = false;
-    // return;
   }
 
   async transform() {

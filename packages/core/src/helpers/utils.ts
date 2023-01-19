@@ -5,7 +5,6 @@ import {
   LogMessageLevels,
   Metric,
   PriorityLevel,
-  ReadMetric,
   RegFormSubmission,
   SymbologyConfig,
   timestamp,
@@ -74,10 +73,8 @@ export const colorDeciderFactory = (symbolConfig: SymbologyConfig, logger?: LogF
 export const configValidationSchema = yup.object().shape({
   uuid: yup.string().required('Config does not have an identifier'),
   baseUrl: yup.string().required('Base Url is required'),
-  formPair: yup.object().shape({
-    regFormId: yup.string().required('Geo point registration form is required'),
-    visitFormId: yup.string().required('Visit form field is required')
-  }),
+  regFormId: yup.string().required('Geo point registration form is required'),
+  visitFormId: yup.string().required('Visit form field is required'),
   apiToken: yup.string().required('A valid api token is required'),
   symbolConfig: yup
     .array()
@@ -252,27 +249,6 @@ export const createMetric = (
 
 export const evaluatingTasks: Record<string, Metric> = {};
 
-export const defaultReadMetric: ReadMetric = (configId?: string) => {
-  if (configId) {
-    return evaluatingTasks[configId];
-  } else return Object.values(evaluatingTasks);
-};
-
 export const defaultWriteMetric: WriteMetric = (metric: Metric) => {
   evaluatingTasks[metric.configId] = metric;
 };
-
-export function isPipelineRunning(metric: Metric | undefined) {
-  if (metric) {
-    const endDate = metric.endTime;
-    if (endDate !== null) {
-      //  if endDate is after startTime then we can assume its not running.
-      if (endDate - metric.startTime >= 0) {
-        return false;
-      }
-    }
-  } else {
-    return false;
-  }
-  return true;
-}

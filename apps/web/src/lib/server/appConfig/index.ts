@@ -42,8 +42,8 @@ export function getAllSymbologyConfigs() {
 export function getClientSideSymbologyConfigs() {
 	const allSymbologyConfigs = getAllSymbologyConfigs();
 	return (allSymbologyConfigs ?? []).map((symbologyConfig: SingleApiSymbolConfig) => {
-		const { baseUrl, formPair, symbolConfig, schedule, uuid } = symbologyConfig;
-		return { baseUrl, formPair, symbolConfig, schedule, uuid };
+		const { baseUrl, visitFormId, regFormId, symbolConfig, schedule, uuid } = symbologyConfig;
+		return { baseUrl, visitFormId, regFormId, symbolConfig, schedule, uuid };
 	});
 }
 

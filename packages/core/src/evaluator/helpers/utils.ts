@@ -1,6 +1,6 @@
 import { markerColorAccessor } from '../../constants';
 import { OnaApiService, upLoadMarkerColor } from '../../services/onaApi/services';
-import { RegFormSubmission, LogFn, timestamp, uuid } from '../../helpers/types';
+import { RegFormSubmission, LogFn, timestamp, uuid, Metric } from '../../helpers/types';
 import {
   colorDeciderFactory,
   getMostRecentVisitDateForFacility,
@@ -87,5 +87,5 @@ export const createMetricFactory =
       notModifiedWithError,
       modified,
       totalSubmissions
-    };
+    } as Metric;
   };

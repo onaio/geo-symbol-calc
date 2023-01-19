@@ -5,10 +5,8 @@
 		{
 			"uuid": "735b3181-ab1e-4e39-905e-5516b7024421",
 			"baseUrl": "https://stage-api.ona.io",
-			"formPair": {
-				"regFormId": "3623",
-				"visitFormId": "3624"
-			},
+			"regFormId": "3623",
+			"visitFormId": "3624",
 			"apiToken": "secret key",
 			"symbolConfig": [
 				{
