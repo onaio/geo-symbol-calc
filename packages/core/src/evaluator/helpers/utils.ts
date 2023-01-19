@@ -1,5 +1,5 @@
 import { markerColorAccessor } from '../../constants';
-import { OnaApiService, editMarkerColor } from '../../services/onaApi/services';
+import { OnaApiService, upLoadMarkerColor } from '../../services/onaApi/services';
 import { RegFormSubmission, LogFn, timestamp, uuid } from '../../helpers/types';
 import {
   colorDeciderFactory,
@@ -42,7 +42,7 @@ export async function transformFacility(
         )
       );
     } else {
-      const uploadMarkerResult = await editMarkerColor(
+      const uploadMarkerResult = await upLoadMarkerColor(
         service,
         regFormId,
         regFormSubmission,
