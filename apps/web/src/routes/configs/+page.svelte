@@ -144,7 +144,6 @@
 						type="text"
 						disabled
 						class="form-control"
-						placeholder='<Add the token to the json configuration file>'
 						on:blur={handleChange}
 						on:change={handleChange}
 						bind:value={$form.apiToken}

@@ -1,4 +1,4 @@
-import { configValidationSchema } from '@onaio/symbology-calc-core/src/utils';
+import { configValidationSchema } from '@onaio/symbology-calc-core';
 
 /** @type {import('./$types').RequestHandler} */
 export function POST({ request }) {
