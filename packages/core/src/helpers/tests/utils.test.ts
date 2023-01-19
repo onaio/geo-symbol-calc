@@ -1,3 +1,4 @@
+import { createConfigs, form3623Submissions } from '../../evaluator/tests/fixtures/fixtures';
 import { LogMessageLevels, RegFormSubmission } from '../types';
 import {
   colorDeciderFactory,
@@ -7,7 +8,6 @@ import {
   createVerboseLog,
   createWarnLog
 } from '../utils';
-import { createConfigs, form3623Submissions } from './fixtures/fixtures';
 
 it('test logger creation utils', () => {
   const message = 'log message';

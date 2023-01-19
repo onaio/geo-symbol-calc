@@ -61,7 +61,7 @@ export class ConfigRunner {
     abortableBlock: {
       const regForm = await service.fetchSingleForm(regFormId);
       if (regForm.isFailure) {
-        yield createMetric(
+        return createMetric(
           evaluatedSubmissions,
           notModifiedWithoutError,
           notModifiedWithError,

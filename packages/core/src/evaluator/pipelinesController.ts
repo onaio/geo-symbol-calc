@@ -4,6 +4,8 @@ import cron from 'node-cron';
 import { ConfigRunner } from './configRunner';
 import { isEqual } from 'lodash';
 
+console.log({cron})
+
 interface GetConfigs {
   (): Config[];
 }
@@ -99,7 +101,7 @@ export class PipelinesController {
     }
   }
 
-  getPipeline(configId?: string) {
+  getPipelines(configId?: string) {
     if (configId) {
       return this.pipelines[configId];
     }

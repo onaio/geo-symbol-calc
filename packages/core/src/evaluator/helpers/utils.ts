@@ -31,7 +31,8 @@ export async function transformFacility(
     modifificationStatus = createModificationStatus(false, mostRecentVisitResult);
     return modifificationStatus;
   }
-  const timeDifference = computeTimeToNow(mostRecentVisitResult);
+  const mostRecentVisitDate = mostRecentVisitResult.getValue();
+  const timeDifference = computeTimeToNow(mostRecentVisitDate);
   const color = colorDecider(timeDifference, regFormSubmission);
   if (color) {
     if (regFormSubmission[markerColorAccessor] === color) {

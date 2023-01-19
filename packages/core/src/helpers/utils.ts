@@ -167,7 +167,8 @@ export async function getMostRecentVisitDateForFacility(
   visitFormId: string,
   logger?: LogFn
 ) {
-  logger?.(createVerboseLog(`Start evaluating symbology for submission _id: ${facilityId}`));
+  // can run into an error, 
+  // can  yield an empty result.
   const query = {
     query: `{"facility": ${facilityId}}`, // filter visit submissions for this facility
     sort: `{"${dateOfVisitAccessor}": -1}` // sort in descending, most recent first.
@@ -208,14 +209,9 @@ export async function getMostRecentVisitDateForFacility(
   }
 }
 
-export function computeTimeToNow(dateResult: Result<timestamp> | Result<undefined>) {
+export function computeTimeToNow(date?: timestamp) {
   let recentVisitDiffToNow = Infinity;
 
-  if (dateResult.isFailure) {
-    return recentVisitDiffToNow;
-  }
-
-  const date = dateResult.getValue();
   if (date === undefined) {
     return recentVisitDiffToNow;
   }

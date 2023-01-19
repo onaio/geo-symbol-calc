@@ -20,9 +20,13 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit) => {
   const requestOptionsWithRetry: RequestInitWithRetry = {
     ...init,
     retries: numOfRetries,
-    retryOn: [502, 500],
+    retryOn: function(_, error, response){
+      if(response){
+        return [502, 500].includes(response?.status);
+      }return false
+    },
     retryDelay: function (attempt, error) {
-      console.log(`#######################33attempt-${attempt} - ${error}`);
+      console.log(`ATTEMPT +++++++++++++++++++> ${attempt}: ${error}`)
       return Math.pow(2, attempt) * delayConstant;
     }
   };
@@ -147,8 +151,10 @@ export class OnaApiService {
 
       page = page + 1;
       const stop1StartFetchPage = performance.now(); //
+      console.log('We also got here')
       yield await customFetch(paginatedSubmissionsUrl, { ...this.getCommonFetchOptions() })
         .then((res) => {
+          console.log({res})
           return (res.json() as Promise<FormSubmissionT[]>).then((res) => {
             this.logger?.(
               createInfoLog(
@@ -158,26 +164,26 @@ export class OnaApiService {
             return Result.ok(res);
           });
         })
-        .catch((err) => {
+        .catch((err: Error) => {
           this.logger?.(
             createErrorLog(
               `Unable to fetch submissions for form id: ${formId} page: ${paginatedSubmissionsUrl} with err : ${err.message}`
             )
           );
-          return Result.fail<FormSubmissionT[]>(err);
+          return Result.fail<FormSubmissionT[]>(err.message);
         })
-        .finally(() => {
-          const stop2EndFetchPage = performance.now();
-          if (pageSize > 100) {
-            this.logger?.(
-              createInfoLog(
-                `Fetched page: ${page}: from ${stop1StartFetchPage} to ${stop2EndFetchPage} i.e in: ${
-                  stop2EndFetchPage - stop1StartFetchPage
-                }`
-              )
-            );
-          }
-        });
+        // .finally(() => {
+        //   const stop2EndFetchPage = performance.now();
+        //   if (pageSize > 100) {
+        //     this.logger?.(
+        //       createInfoLog(
+        //         `Fetched page: ${page}: from ${stop1StartFetchPage} to ${stop2EndFetchPage} i.e in: ${
+        //           stop2EndFetchPage - stop1StartFetchPage
+        //         }`
+        //       )
+        //     );
+        //   }
+        // });
     } while (page * pageSize <= totalSubmissions);
   }
 
@@ -230,16 +236,16 @@ export class OnaApiService {
         );
         return Result.fail(err);
       })
-      .finally(() => {
-        const stop1StopEdit = performance.now();
-        this.logger?.(
-          createInfoLog(
-            `Editing submission with _id: ${submissionPayload._id} took ${
-              stop1StopEdit - stop1StartEdit
-            }`
-          )
-        );
-      });
+      // .finally(() => {
+      //   const stop1StopEdit = performance.now();
+      //   this.logger?.(
+      //     createInfoLog(
+      //       `Editing submission with _id: ${submissionPayload._id} took ${
+      //         stop1StopEdit - stop1StartEdit
+      //       }`
+      //     )
+      //   );
+      // });
   }
 }
 

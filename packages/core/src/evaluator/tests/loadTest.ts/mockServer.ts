@@ -5,7 +5,7 @@ import {
   formEndpoint,
   numOfSubmissionsAccessor,
   submittedDataEndpoint
-} from '../../constants';
+} from '../../../constants';
 import { form3623, form3623Submissions, form3624Submissions } from '../fixtures/fixtures';
 import { address, date, datatype } from 'faker';
 import express from 'express';
