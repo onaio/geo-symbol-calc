@@ -10,7 +10,6 @@
     "test": "jest -c ../../jest.config.js"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.3",
     "@types/express": "^4.17.14",
     "@types/faker": "5.5.9",
     "@types/lodash-es": "^4.14.186",
@@ -24,7 +23,6 @@
     "tsconfig": "*"
   },
   "dependencies": {
-    "better-sqlite3": "^8.0.1",
     "fetch-retry": "^5.0.3",
     "lodash-es": "^4.17.21",
     "node-cron": "^3.0.2",
