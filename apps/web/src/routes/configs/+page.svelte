@@ -93,10 +93,10 @@
 						type="text"
 						id="regFormId"
 						class="form-control"
-						name={`formPair.regFormId`}
+						name={`regFormId`}
 						on:change={handleChange}
 						on:blur={handleChange}
-						bind:value={$form.formPair.regFormId}
+						bind:value={$form.regFormId}
 					/>
 					<ErrorMessage {errors} name="formPair.regFormId" />
 				</div>
@@ -108,10 +108,10 @@
 						type="text"
 						id="visitFormId"
 						class="form-control"
-						name={`formPair.visitFormId`}
+						name={`visitFormId`}
 						on:change={handleChange}
 						on:blur={handleChange}
-						bind:value={$form.formPair.visitFormId}
+						bind:value={$form.visitFormId}
 					/>
 					<ErrorMessage {errors} name={`formPair.visitFormId`} />
 				</div>
@@ -203,6 +203,7 @@
 											name={`symbolConfig[${i}].frequency`}
 											id={`symbolConfig[${i}].frequency`}
 											type="number"
+											min = 0
 											class="form-control"
 											on:blur={handleChange}
 											on:change={handleChange}
@@ -227,6 +228,7 @@
 														<div class="col-sm-6">
 															<input
 																type="number"
+																min=0
 																class="form-control"
 																name={`symbolConfig[${i}].symbologyOnOverflow[${j}].overFlowDays`}
 																id={`symbolConfig[${i}].symbologyOnOverflow[${j}].overFlowDays`}

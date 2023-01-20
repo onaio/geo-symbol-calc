@@ -13,10 +13,8 @@ export enum PriorityLevel {
 export interface FormFields {
 	uuid: string;
 	baseUrl: string;
-	formPair: {
-		regFormId: string;
-		visitFormId: string;
-	};
+	regFormId: string;
+	visitFormId: string;
 	apiToken?: string;
 	symbolConfig: {
 		priorityLevel?: PriorityLevel;
@@ -42,11 +40,9 @@ export const defaultPriorityErrorValues = {
 export const initialValues: FormFields = {
 	uuid: '',
 	baseUrl: '',
-	formPair: {
-		regFormId: '',
-		visitFormId: ''
-	},
-	apiToken: '<Replace with api token>',
+	regFormId: '',
+	visitFormId: '',
+	apiToken: '<Replace token here>',
 	symbolConfig: [defaultPriorityFormValues],
 	schedule: ''
 };
@@ -54,10 +50,8 @@ export const initialValues: FormFields = {
 export const configValidationSchema = yup.object().shape({
 	uuid: yup.string(),
 	baseUrl: yup.string().required('Base Url is required'),
-	formPair: yup.object().shape({
-		regFormId: yup.string().required('Geo point registration form is required'),
-		visitFormId: yup.string().required('Visit form field is required')
-	}),
+	regFormId: yup.string().required('Geo point registration form is required'),
+	visitFormId: yup.string().required('Visit form field is required'),
 	symbolConfig: yup
 		.array()
 		.of(
@@ -98,8 +92,16 @@ export const configValidationSchema = yup.object().shape({
 });
 
 export const generateFilledData = (formFields: FormFields) => {
-	const { baseUrl, formPair, apiToken, symbolConfig, schedule, uuid } = formFields;
-	return { baseUrl, formPair, apiToken, symbolConfig, schedule, uuid: uuid ? uuid : v4() };
+	const { baseUrl, regFormId, visitFormId, apiToken, symbolConfig, schedule, uuid } = formFields;
+	return {
+		baseUrl,
+		regFormId,
+		visitFormId,
+		apiToken,
+		symbolConfig,
+		schedule,
+		uuid: uuid ? uuid : v4()
+	};
 };
 
 export const getInitialValues = (data?: WebConfig): FormFields => {
@@ -107,7 +109,8 @@ export const getInitialValues = (data?: WebConfig): FormFields => {
 		return {
 			uuid: data.uuid,
 			baseUrl: data.baseUrl,
-			formPair: data.formPair,
+			regFormId: data.regFormId,
+			visitFormId: data.visitFormId,
 			apiToken: '<Replace with api token>',
 			symbolConfig: data.symbolConfig.map((config) => {
 				return {

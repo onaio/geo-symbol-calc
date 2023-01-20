@@ -14,66 +14,6 @@ export const logCalls = [
   ],
   [
     {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304870'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304871'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304872'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304873'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304874'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304889'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304890'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304891'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304892'
-    }
-  ],
-  [
-    {
-      level: 'verbose',
-      message: 'Start evaluating symbology for submission _id: 304893'
-    }
-  ],
-  [
-    {
       level: 'info',
       message:
         'Fetched 4 submissions for form id: 3624 page: https://test-api.ona.io/api/v1/data/3624?page_size=1&page=1&query=%7B%22facility%22%3A+304870%7D&sort=%7B%22date_of_visit%22%3A+-1%7D'

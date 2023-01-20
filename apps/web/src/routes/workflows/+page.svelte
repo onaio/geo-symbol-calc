@@ -5,7 +5,6 @@
 	import PageHeader from '$lib/shared/components/PageHeader.svelte';
 	import { goto, invalidate } from '$app/navigation';
 	import { toast } from '@zerodevx/svelte-toast';
-	import { isPipelineRunning } from '$lib/shared/utils';
 
 	export let data: PageData;
 
@@ -75,12 +74,11 @@
 		{#each data.configs as config, idex}
 			{@const { tableHeaders, tableRows, colorsColSpan } = parseForTable(config)}
 			{@const metric = config.metric}
-			{@const pipelineIsRunning = isPipelineRunning(metric)}
 			<div class="card my-3">
 				<div class="card-header d-flex justify-content-end gap-2">
 					<button
 						on:click={() => manualTrigger(config.uuid)}
-						disabled={pipelineIsRunning}
+						disabled={config.isRunning}
 						class="btn btn-outline-primary btn-sm"
 						><i class="fas fa-cogs" /> Manually Trigger workflow</button
 					>
@@ -96,9 +94,9 @@
 						<dt class="col-sm-3">API Base url</dt>
 						<dd class="col-sm-9">{config.baseUrl}</dd>
 						<dt class="col-sm-3">Registration form Id</dt>
-						<dd class="col-sm-9">{config.formPair.regFormId}</dd>
+						<dd class="col-sm-9">{config.regFormId}</dd>
 						<dt class="col-sm-3">Visit form Id</dt>
-						<dd class="col-sm-9">{config.formPair.visitFormId}</dd>
+						<dd class="col-sm-9">{config.visitFormId}</dd>
 					</dl>
 					<div class="text-center">
 						<table class="table table-bordered table-sm table-hover text-center">
@@ -147,7 +145,7 @@
 						</div>
 					</div>
 				{:else}
-					{#if pipelineIsRunning}
+					{#if config.isRunning}
 						<span class="text-info">Pipeline is currently running.</span>
 					{/if}
 					<dl class="row">
@@ -168,7 +166,7 @@
 						<dt class="col-sm-9">
 							No. of registration submissions not modified due to error
 						</dt>
-						<dd class="col-sm-3">{metric?.notModdifiedDueError}</dd>
+						<dd class="col-sm-3">{metric?.notModifiedWithError}</dd>
 						<dt class="col-sm-9">
 							No. of registration submissions not modified without error
 						</dt>

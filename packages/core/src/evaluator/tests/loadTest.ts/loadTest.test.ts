@@ -1,6 +1,7 @@
-import { createConfigs } from '../fixtures/fixtures';
-import { evaluate } from '../../evaluator';
 import { app } from './mockServer';
+import { PipelinesController } from '../../pipelinesController';
+import { ConfigRunner } from '../../configRunner';
+import { createConfigs } from '../fixtures/fixtures';
 
 const port = 3001;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +24,9 @@ test('load test on submissions', async () => {
   };
 
   console.time('[time benchmark] took:');
-  await evaluate(thisConfigs)
+  const pipelinesController = new PipelinesController(() => [thisConfigs]);
+  const configRunner = pipelinesController.getPipelines(configs.uuid) as ConfigRunner;
+  await configRunner.transform()
     .catch((err: Error) => {
       throw err;
     })

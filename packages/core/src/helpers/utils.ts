@@ -5,7 +5,6 @@ import {
   LogMessageLevels,
   Metric,
   PriorityLevel,
-  ReadMetric,
   RegFormSubmission,
   SymbologyConfig,
   timestamp,
@@ -14,8 +13,8 @@ import {
 } from './types';
 import * as yup from 'yup';
 import nodeCron from 'node-cron';
-import { dateOfVisitAccessor, priorityLevelAccessor } from './constants';
-import { OnaApiService } from './services';
+import { dateOfVisitAccessor, priorityLevelAccessor } from '../constants';
+import { OnaApiService } from '../services/onaApi/services';
 
 export const createInfoLog = (message: string) => ({ level: LogMessageLevels.INFO, message });
 export const createWarnLog = (message: string) => ({ level: LogMessageLevels.WARN, message });
@@ -74,10 +73,8 @@ export const colorDeciderFactory = (symbolConfig: SymbologyConfig, logger?: LogF
 export const configValidationSchema = yup.object().shape({
   uuid: yup.string().required('Config does not have an identifier'),
   baseUrl: yup.string().required('Base Url is required'),
-  formPair: yup.object().shape({
-    regFormId: yup.string().required('Geo point registration form is required'),
-    visitFormId: yup.string().required('Visit form field is required')
-  }),
+  regFormId: yup.string().required('Geo point registration form is required'),
+  visitFormId: yup.string().required('Visit form field is required'),
   apiToken: yup.string().required('A valid api token is required'),
   symbolConfig: yup
     .array()
@@ -170,7 +167,8 @@ export async function getMostRecentVisitDateForFacility(
   visitFormId: string,
   logger?: LogFn
 ) {
-  logger?.(createVerboseLog(`Start evaluating symbology for submission _id: ${facilityId}`));
+  // can run into an error, 
+  // can  yield an empty result.
   const query = {
     query: `{"facility": ${facilityId}}`, // filter visit submissions for this facility
     sort: `{"${dateOfVisitAccessor}": -1}` // sort in descending, most recent first.
@@ -180,7 +178,9 @@ export async function getMostRecentVisitDateForFacility(
   const formSubmissionIterator =
     service.fetchPaginatedFormSubmissionsGenerator<VisitFormSubmission>(visitFormId, 1, query, 1);
 
-  const visitSubmissionsResult = await formSubmissionIterator.next().then(res => res.value) as Result<VisitFormSubmission[]>;
+  const visitSubmissionsResult = (await formSubmissionIterator
+    .next()
+    .then((res) => res.value)) as Result<VisitFormSubmission[]>;
 
   if (visitSubmissionsResult.isFailure) {
     logger?.(
@@ -209,14 +209,9 @@ export async function getMostRecentVisitDateForFacility(
   }
 }
 
-export function computeTimeToNow(dateResult: Result<timestamp> | Result<undefined>) {
+export function computeTimeToNow(date?: timestamp) {
   let recentVisitDiffToNow = Infinity;
 
-  if (dateResult.isFailure) {
-    return recentVisitDiffToNow;
-  }
-
-  const date = dateResult.getValue();
   if (date === undefined) {
     return recentVisitDiffToNow;
   }
@@ -250,27 +245,6 @@ export const createMetric = (
 
 export const evaluatingTasks: Record<string, Metric> = {};
 
-export const defaultReadMetric: ReadMetric = (configId?: string) => {
-  if (configId) {
-    return evaluatingTasks[configId];
-  } else return Object.values(evaluatingTasks);
-};
-
 export const defaultWriteMetric: WriteMetric = (metric: Metric) => {
   evaluatingTasks[metric.configId] = metric;
 };
-
-export function isPipelineRunning(metric: Metric | undefined) {
-  if (metric) {
-    const endDate = metric.endTime;
-    if (endDate !== null) {
-      //  if endDate is after startTime then we can assume its not running.
-      if (endDate - metric.startTime >= 0) {
-        return false;
-      }
-    }
-  } else {
-    return false;
-  }
-  return true;
-}

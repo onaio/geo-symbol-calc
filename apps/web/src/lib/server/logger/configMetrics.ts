@@ -1,7 +1,7 @@
 /** Save configuration runs metrics to a file. */
 import fs from 'node:fs';
 import { metricsJsonFile } from '../constants';
-import { Result } from '@onaio/symbology-calc-core/src/utils';
+import { Result, type uuid } from '@onaio/symbology-calc-core';
 import { LogMessageLevels, type Metric } from '@onaio/symbology-calc-core';
 import { geoSymbolLogger } from './winston';
 
@@ -65,13 +65,13 @@ export function writePripelineMetrics(metric: Metric) {
 
 /** Reads the metrics json db file and gets metric information for configured pipelines.
  */
-function readPipelineMetrics() {
+function readPipelineMetrics(): Result<Record<string, Metric[]>> {
 	if (!fs.existsSync(metricsJsonFile)) {
 		fs.writeFileSync(metricsJsonFile, '{}');
 	}
 	try {
 		const metricJsonString = fs.readFileSync(metricsJsonFile, { encoding: 'utf-8' });
-		const metricJson = JSON.parse(metricJsonString);
+		const metricJson = JSON.parse(metricJsonString) as Record<uuid, Metric[]>;
 		return Result.ok(metricJson);
 	} catch (error: unknown) {
 		const err = error as Error;

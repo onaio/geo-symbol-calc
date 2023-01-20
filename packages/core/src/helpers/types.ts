@@ -1,4 +1,4 @@
-import { numOfSubmissionsAccessor } from './constants';
+import { numOfSubmissionsAccessor } from '../constants';
 
 export enum LogMessageLevels {
   ERROR = 'error',
@@ -22,13 +22,10 @@ export type CronTabString = string;
 export interface Config {
   // an id: helps with managing the configs
   uuid: string;
-  // form pair ids
-  formPair: {
-    // id for form used to register the geo points
-    regFormId: string;
-    // id for form used by Health workers to visit added geopoints
-    visitFormId: string;
-  };
+  // id for form used to register the geo points
+  regFormId: string;
+  // id for form used by Health workers to visit added geopoints
+  visitFormId: string;
   // Business rules config - How to decide which color codes to add per facility id
   symbolConfig: SymbologyConfig;
   // logger function
@@ -43,8 +40,6 @@ export interface Config {
   regFormSubmissionChunks?: number;
   // store metric; progress information regarding a running or the last run of an pipeline
   writeMetric: WriteMetric;
-  // read metric information as stored by writeMetric
-  readMetric: ReadMetric;
   // Abort controller to abort evaluation of this pipeline
   requestController: AbortController;
 }
@@ -56,7 +51,9 @@ export enum PriorityLevel {
   LOW = 'Low'
 }
 
+export type uuid = string;
 export type Color = string;
+export type timestamp = number;
 
 export type SymbologyConfig = {
   priorityLevel: PriorityLevel;
@@ -112,21 +109,15 @@ export interface Form {
   [numOfSubmissionsAccessor]: number;
 }
 
-export type timestamp = number;
-
 export interface Metric {
   configId: string;
   startTime: timestamp;
   endTime: timestamp | null;
   evaluated: number;
   notModifiedWithoutError: number;
-  notModdifiedDueError: number;
+  notModifiedWithError: number;
   modified: number;
-  totalSubmissions?: number
-}
-
-export interface ReadMetric {
-  (configId?: string): Metric | undefined | Metric[];
+  totalSubmissions?: number;
 }
 
 export interface WriteMetric {
