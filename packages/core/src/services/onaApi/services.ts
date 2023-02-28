@@ -17,7 +17,7 @@ const persistentFetch = fetchRetry(fetch);
  * @param input - url or a request object representing the request to be made
  * @param init - fetch options.
  */
-export const customFetch = async (input: RequestInfo, init?: RequestInit) => {
+export const customFetch = async (input: RequestInfo, init?: RequestInit, logger?: LogFn) => {
   // The exponential backoff strategy can be hardcoded, should it be left to the calling function.
   // post requests are not idempotent
   const numOfRetries = 10;
@@ -26,18 +26,31 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit) => {
     ...init,
     retries: numOfRetries,
     retryOn: function (_, error, response) {
-      if (response) {
-        return [502, 500].includes(response?.status);
+      let retry = false;
+      const method = init?.method ?? 'GET';
+      if (error) {
+        retry = method === 'GET';
       }
-      return false;
+      if (response) {
+        const status = response?.status;
+        // retry on all server side error http codes.
+        retry = status >= 500 && status < 600;
+      }
+
+      if (retry) {
+        const msg = response
+          ? `Retrying request; request respondend with status: ${response?.status}`
+          : 'Retrying request, Request does not have a response';
+        logger?.(createVerboseLog(msg));
+      }
+      return retry;
     },
-    retryDelay: function (attempt, error) {
-      console.log(`ATTEMPT +++++++++++++++++++> ${attempt}: ${error}`);
+    retryDelay: function (attempt) {
       return Math.pow(2, attempt) * delayConstant;
     }
   };
   const response = await persistentFetch(input, requestOptionsWithRetry).catch((err) => {
-    throw Error(`${err.type}: ${err.name}: ${err.message}.`);
+    throw Error(`${err.name}: ${err.message}.`);
   });
   if (response?.ok) {
     return response;
@@ -80,7 +93,7 @@ export class OnaApiService {
    */
   async fetchSingleForm(formId: string, getFormPath: string = formEndpoint) {
     const formUrl = `${this.baseUrl}/${getFormPath}/${formId}`;
-    return customFetch(formUrl, { ...this.getCommonFetchOptions() })
+    return customFetch(formUrl, { ...this.getCommonFetchOptions() }, this.logger)
       .then((res) => {
         this.logger?.(createVerboseLog(`Fetched form wih form id: ${formId}`));
         return res.json().then((form: Form) => {
@@ -155,7 +168,11 @@ export class OnaApiService {
       const paginatedSubmissionsUrl = `${fullSubmissionsUrl}?${sParams.toString()}`;
 
       page = page + 1;
-      yield await customFetch(paginatedSubmissionsUrl, { ...this.getCommonFetchOptions() })
+      yield await customFetch(
+        paginatedSubmissionsUrl,
+        { ...this.getCommonFetchOptions() },
+        this.logger
+      )
         .then((res) => {
           return (res.json() as Promise<FormSubmissionT[]>).then((res) => {
             this.logger?.(
@@ -201,11 +218,15 @@ export class OnaApiService {
     };
     const fullEditSubmissionUrl = `${this.baseUrl}/${editSubmissionPath}`;
 
-    return await customFetch(fullEditSubmissionUrl, {
-      ...this.getCommonFetchOptions(),
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
+    return await customFetch(
+      fullEditSubmissionUrl,
+      {
+        ...this.getCommonFetchOptions(),
+        method: 'POST',
+        body: JSON.stringify(payload)
+      },
+      this.logger
+    )
       .then((res) => {
         this.logger?.(
           createVerboseLog(
