@@ -1,5 +1,6 @@
 import { flatMap } from 'lodash-es';
 import {
+  AbortErrorName,
   editSubmissionEndpoint,
   formEndpoint,
   markerColorAccessor,
@@ -28,7 +29,7 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
     retryOn: function (_, error, response) {
       let retry = false;
       const method = init?.method ?? 'GET';
-      if (error) {
+      if (error && error.name !== AbortErrorName) {
         retry = method === 'GET';
       }
       if (response) {

@@ -7,3 +7,6 @@ export const markerColorAccessor = 'marker-color';
 export const dateOfVisitAccessor = 'date_of_visit';
 export const priorityLevelAccessor = 'priority_level';
 export const numOfSubmissionsAccessor = 'num_of_submissions';
+
+// magic strings
+export const AbortErrorName = 'AbortError';
