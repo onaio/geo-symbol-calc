@@ -38,6 +38,8 @@ export interface Config {
   schedule: CronTabString;
   // how many registration form submissions to process at a time.
   regFormSubmissionChunks?: number;
+  // out of regFormSubmissionChunk how many should be posted/edited at a time
+  editSubmissionChunks?: number;
   // store metric; progress information regarding a running pipeline or the last run of an pipeline
   writeMetric: WriteMetric;
 }
