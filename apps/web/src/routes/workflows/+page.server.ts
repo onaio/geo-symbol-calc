@@ -14,7 +14,7 @@ export function load() {
 			...config,
 			metric: metricForThisConfig,
 			isRunning,
-			invalidityErrror: pipeLineRunner.invalidError
+			invalidityErrror: pipeLineRunner?.invalidError ?? null
 		};
 	});
 	return {
