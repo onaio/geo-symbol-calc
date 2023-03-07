@@ -49,9 +49,11 @@ export class ConfigRunner {
       baseUrl,
       apiToken,
       uuid: configId,
-      regFormSubmissionChunks: facilityProcessingChunks
+      regFormSubmissionChunks: facilityProcessingChunks,
+      editSubmissionChunks: facilityEditChunks
     } = config;
     const regFormSubmissionChunks = facilityProcessingChunks ?? 1000;
+    const editSubmissionsChunks = facilityEditChunks ?? 100;
 
     const startTime = Date.now();
     const createMetric = createMetricFactory(startTime, configId);
@@ -127,11 +129,10 @@ export class ConfigRunner {
         );
 
         let cursor = 0;
-        const postChunks = 100;
         while (cursor <= updateRegFormSubmissionsPromises.length) {
-          const end = cursor + postChunks;
+          const end = cursor + editSubmissionsChunks;
           const chunksToSend = updateRegFormSubmissionsPromises.slice(cursor, end);
-          cursor = cursor + postChunks;
+          cursor = cursor + editSubmissionsChunks;
           await Promise.allSettled(chunksToSend.map((x) => x()));
         }
       }
