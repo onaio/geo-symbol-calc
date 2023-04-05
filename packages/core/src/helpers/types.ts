@@ -22,6 +22,8 @@ export type CronTabString = string;
 export interface Config {
   // an id: helps with managing the configs
   uuid: string;
+  // title: human readable string that identifies config
+  title?: string;
   // id for form used to register the geo points
   regFormId: string;
   // id for form used by Health workers to visit added geopoints
