@@ -86,6 +86,21 @@
 	<div class="col-sm-6 col-md-8">
 		<form class="form" on:submit={handleSubmit}>
 			<div class="form-group row mb-2">
+				<label for="regFormId" class="col-sm-3">Name</label>
+				<div class="col-sm-9">
+					<input
+						type="text"
+						id="title"
+						class="form-control"
+						name={`title`}
+						on:change={handleChange}
+						on:blur={handleChange}
+						bind:value={$form.title}
+					/>
+					<ErrorMessage {errors} name="title" />
+				</div>
+			</div>
+			<div class="form-group row mb-2">
 				<label for="regFormId" class="col-sm-3">Registration Form Id</label>
 				<div class="col-sm-9">
 					<input

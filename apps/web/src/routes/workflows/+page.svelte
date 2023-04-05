@@ -98,6 +98,8 @@
 						</div>
 					{/if}
 					<dl class="row">
+						<dt class="col-sm-3">Pipeline name</dt>
+						<dd class="col-sm-9">{config.title}</dd>
 						<dt class="col-sm-3">API Base url</dt>
 						<dd class="col-sm-9">{config.baseUrl}</dd>
 						<dt class="col-sm-3">Registration form Id</dt>

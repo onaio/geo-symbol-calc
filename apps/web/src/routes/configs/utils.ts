@@ -12,6 +12,7 @@ export enum PriorityLevel {
 
 export interface FormFields {
 	uuid: string;
+	title?: string;
 	baseUrl: string;
 	regFormId: string;
 	visitFormId: string;
@@ -39,6 +40,7 @@ export const defaultPriorityErrorValues = {
 
 export const initialValues: FormFields = {
 	uuid: '',
+	title: '',
 	baseUrl: '',
 	regFormId: '',
 	visitFormId: '',
@@ -49,6 +51,7 @@ export const initialValues: FormFields = {
 
 export const configValidationSchema = yup.object().shape({
 	uuid: yup.string(),
+	title: yup.string(),
 	baseUrl: yup.string().required('Base Url is required'),
 	regFormId: yup.string().required('Geo point registration form is required'),
 	visitFormId: yup.string().required('Visit form field is required'),
@@ -92,8 +95,10 @@ export const configValidationSchema = yup.object().shape({
 });
 
 export const generateFilledData = (formFields: FormFields) => {
-	const { baseUrl, regFormId, visitFormId, apiToken, symbolConfig, schedule, uuid } = formFields;
+	const { baseUrl, regFormId, visitFormId, apiToken, symbolConfig, schedule, uuid, title } =
+		formFields;
 	return {
+		title,
 		baseUrl,
 		regFormId,
 		visitFormId,
@@ -107,6 +112,7 @@ export const generateFilledData = (formFields: FormFields) => {
 export const getInitialValues = (data?: WebConfig): FormFields => {
 	if (data) {
 		return {
+			title: data.title,
 			uuid: data.uuid,
 			baseUrl: data.baseUrl,
 			regFormId: data.regFormId,
