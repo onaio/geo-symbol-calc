@@ -1,7 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { range } from 'lodash-es';
-	import { convertCronToHuman, formatTimestamp, parseForTable } from './utils';
+	import { entries, range } from 'lodash-es';
+	import {
+		convertCronToHuman,
+		formatTimestamp,
+		formatTriggerDuration,
+		parseForTable
+	} from './utils';
 	import PageHeader from '$lib/shared/components/PageHeader.svelte';
 	import { goto, invalidate } from '$app/navigation';
 	import { toast } from '@zerodevx/svelte-toast';
@@ -53,6 +58,24 @@
 				window.location.reload();
 			});
 	};
+
+	const getModifiedColors = (metric: any) => {
+		const onlyModified = { ...metric.facilitiesEvaluated.modified };
+		delete onlyModified.total;
+		return onlyModified;
+	};
+
+	const getNotModifiedReasons = (metric: any) => {
+		const onlyNotModified = { ...metric.facilitiesEvaluated.notModified };
+		delete onlyNotModified.total
+		return onlyNotModified;
+	}
+
+	const getNotEvaluatedReasons = (metric: any) => {
+		const notEvaluatedReasons = { ...metric.facilitiesNotEvaluated };
+		delete notEvaluatedReasons.total
+		return notEvaluatedReasons;
+	}
 </script>
 
 <!-- <svelte:head>
@@ -158,25 +181,134 @@
 							<span class="text-info">Pipeline is currently running.</span>
 						{/if}
 						<dl class="row">
-							<dt class="col-sm-9">Started</dt>
+							<dt class="col-sm-9">pipeline ran for</dt>
 							<dd class="col-sm-3">
-								{metric?.startTime ? formatTimestamp(metric?.startTime) : ' - '}
+								{formatTriggerDuration(metric.trigger.from, metric.trigger.to)}
 							</dd>
-							<dt class="col-sm-9">Ended</dt>
-							<dd class="col-sm-3">
-								{metric?.endTime ? formatTimestamp(metric?.endTime) : ' - '}
-							</dd>
+							<dt class="col-sm-9">Pipeline triggered via</dt>
+							<dd class="col-sm-3">{metric.trigger.by}</dd>
+
 							<dt class="col-sm-9">Total no. of facilities</dt>
-							<dd class="col-sm-3">{metric?.totalSubmissions ?? ' - '}</dd>
+							<dd class="col-sm-3">{metric?.totalFacilities ?? ' - '}</dd>
+
 							<dt class="col-sm-9">No. of facilities evaluated</dt>
-							<dd class="col-sm-3">{metric?.evaluated}</dd>
-							<dt class="col-sm-9">No. of registration submissions modified</dt>
-							<dd class="col-sm-3">{metric?.modified}</dd>
-							<dt class="col-sm-9">No. of registration submissions not modified due to error</dt>
-							<dd class="col-sm-3">{metric?.notModifiedWithError}</dd>
-							<dt class="col-sm-9">No. of registration submissions not modified without error</dt>
-							<dd class="col-sm-3">{metric?.notModifiedWithoutError}</dd>
+							<dd class="col-sm-3">{metric?.facilitiesEvaluated.total}</dd>
+
+							<dt class="col-sm-9">No. of facilities NOT evaluated</dt>
+							<dd class="col-sm-3">{metric?.facilitiesNotEvaluated.total}</dd>
 						</dl>
+						<!-- parse for facilities evaluated breakdown -->
+						<div class="card mb-3">
+							<div class="card-body">
+								<p class="fw-bolder">
+									Facilities Evaluated Breakdown. ({metric.facilitiesEvaluated.total})
+								</p>
+								<p class="fw-bold">Modified.({metric.facilitiesEvaluated.modified.total})</p>
+								<table class="table table-bordered table-sm table-hover text-center">
+									<thead>
+										<tr>
+											<th>Change</th>
+											<th>color</th>
+											<th>No. of facilities</th>
+										</tr>
+									</thead>
+									<tbody>
+										{#each Object.entries(getModifiedColors(metric)) as row}
+											<tr>
+												<td>Marker color changed to</td>
+												<td style={`background-color: ${row[0]}`}
+													><span class="fw-bolder">{row[0]}</span></td
+												>
+												<td>{row[1]}</td>
+											</tr>
+										{/each}
+										<tr>
+											<td colspan="2"> Total</td>
+											<td>
+												{metric.facilitiesEvaluated.modified.total}
+											</td>
+										</tr>
+									</tbody>
+										<!-- 	the last row is the total		 -->
+									<!-- <tfoot>
+									  </tfoot> -->
+									
+								</table>
+
+								<p class="fw-bold">Not Modified.({metric.facilitiesEvaluated.notModified.total})</p>
+								<table class="table table-bordered table-sm table-hover text-center">
+									<thead>
+										<tr>
+											<th>Reason code</th>
+											<th>Reason description</th>
+											<th>No. of facilities</th>
+										</tr>
+									</thead>
+									<tbody>
+										{#each Object.entries(getNotModifiedReasons(metric)) as row}
+											<tr>
+												<td>{row[0]}</td>
+												<td
+													> {row[1].description}</td
+												>
+												<td>{row[1].total}</td>
+											</tr>
+										{/each}
+										<tr>
+											<td colspan="2"> Total</td>
+											<td>
+												{metric.facilitiesEvaluated.notModified.total}
+											</td>
+										</tr>
+									</tbody>
+<!-- 	
+									<tfoot>
+									  </tfoot> -->
+									
+								</table>
+
+
+							</div>
+						</div>
+
+						<div class="card mb-3">
+							<div class="card-body">
+								<p class="fw-bolder">
+									Facilities NOT Evaluated Breakdown. ({metric.facilitiesNotEvaluated.total})
+								</p>
+
+								<table class="table table-bordered table-sm table-hover text-center">
+									<thead>
+										<tr>
+											<th>Reason code</th>
+											<th>Reason description</th>
+											<th>No. of facilities</th>
+										</tr>
+									</thead>
+									<tbody>
+										{#each Object.entries(getNotEvaluatedReasons(metric)) as row}
+											<tr>
+												<td>{row[0]}</td>
+												<td
+													> {row[1].description}</td
+												>
+												<td>{row[1].total}</td>
+											</tr>
+										{/each}
+										
+										<tr>
+											<td colspan="2">Total</td>
+											<td>
+												{metric.facilitiesNotEvaluated.total}
+											</td>
+										</tr>
+									</tbody>
+								
+								</table>
+
+
+							</div>
+						</div>
 					{/if}
 				</div>
 			</div>
