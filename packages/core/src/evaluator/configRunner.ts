@@ -11,7 +11,21 @@ import {
 import cron from 'node-cron';
 import { createMetricFactory } from './helpers/utils';
 import { transformFacility } from './helpers/utils';
-import { Sig, Result } from '../helpers/Result';
+import {
+  Result,
+  UNKNOWN_TRANSFORM_FACILITY_ERROR,
+  ResultCodes,
+  UNKNOWN_SUCCESS_REASON,
+  EVALUATION_ABORTED,
+  SuccessResultDetail,
+  FailureResultDetail
+} from '../helpers/Result';
+import { ReportMetric, TriggeredBy } from './metricReporter';
+
+/** Config Runner:
+ * Create an object that has different properties that respectively represent a type of metric category.
+ * when there is an action of the specific category, add count to the necessary method.
+ */
 
 /**
  * Represents a single config, Contains actions that pertain to the execution
@@ -27,6 +41,8 @@ export class ConfigRunner {
   private abortController;
   /** stores validity of config */
   public invalidError: string | null = null;
+  /** metric category store for each run */
+  // private reporter: ReportMetric;
 
   constructor(config: Config) {
     this.config = config;
@@ -36,10 +52,11 @@ export class ConfigRunner {
     } catch (err: unknown) {
       this.invalidError = (err as Error).message;
     }
+    // this.reporter = new ReportMetric(config.uuid);
   }
 
   /** Runs the pipeline, generator that yields metric information regarding the current run */
-  async *transformGenerator() {
+  private async *transformGenerator(triggeredVia: TriggeredBy) {
     const config = this.config;
     const {
       regFormId,
@@ -54,23 +71,11 @@ export class ConfigRunner {
     } = config;
     const regFormSubmissionChunks = facilityProcessingChunks ?? 1000;
     const editSubmissionsChunks = facilityEditChunks ?? 100;
+    const reporter = new ReportMetric(configId);
+    reporter.updateStart(triggeredVia);
 
-    const startTime = Date.now();
-    const createMetric = createMetricFactory(startTime, configId);
-    let evaluatedSubmissions = 0;
-    let notModifiedWithError = 0;
-    let notModifiedWithoutError = 0;
-    let modified = 0;
     let totalRegFormSubmissions = 0;
-
-    // allows us to continously and progressively get reports on number of submissions evaluated.
-    yield createMetric(
-      evaluatedSubmissions,
-      notModifiedWithoutError,
-      notModifiedWithError,
-      modified,
-      totalRegFormSubmissions
-    );
+    yield reporter.generateJsonReport();
 
     const service = new OnaApiService(baseUrl, apiToken, logger, this.abortController);
     const colorDecider = colorDeciderFactory(symbolConfig, logger);
@@ -78,18 +83,12 @@ export class ConfigRunner {
     abortableBlock: {
       const regForm = await service.fetchSingleForm(regFormId);
       if (regForm.isFailure) {
-        yield createMetric(
-          evaluatedSubmissions,
-          notModifiedWithoutError,
-          notModifiedWithError,
-          modified,
-          totalRegFormSubmissions,
-          true
-        );
+        yield reporter.generateJsonReport(true);
         return;
       }
       const regFormSubmissionsNum = regForm.getValue()[numOfSubmissionsAccessor];
       totalRegFormSubmissions = regFormSubmissionsNum;
+      reporter.updateTotalFacilities(totalRegFormSubmissions);
 
       // fetches submissions for the first form.
       const regFormSubmissionsIterator = service.fetchPaginatedFormSubmissionsGenerator(
@@ -101,8 +100,16 @@ export class ConfigRunner {
 
       for await (const regFormSubmissionsResult of regFormSubmissionsIterator) {
         if (regFormSubmissionsResult.isFailure) {
-          if (regFormSubmissionsResult.errorCode === Sig.ABORT_EVALUATION) {
+          if (regFormSubmissionsResult.detail?.code === EVALUATION_ABORTED) {
+            // TODO - reporter can report that the pipeline was cancelled.
+            // this.updateMetric(EVALUATION_ABORTED, 0)
             break abortableBlock;
+          } else {
+            const { code, recsAffected } = (regFormSubmissionsResult.detail ??
+              {}) as FailureResultDetail;
+            const sanitizedCode = code ?? UNKNOWN_TRANSFORM_FACILITY_ERROR;
+            // TODO - we are still updating metric reports as sideEffects in the code.
+            reporter.updateFacilitiesNotEvaluated(sanitizedCode, recsAffected ?? 0);
           }
           continue;
         }
@@ -110,7 +117,8 @@ export class ConfigRunner {
         const regFormSubmissions = regFormSubmissionsResult.getValue();
         const updateRegFormSubmissionsPromises = (regFormSubmissions as RegFormSubmission[]).map(
           (regFormSubmission) => async () => {
-            const modificationStatus = await transformFacility(
+            reporter.updateFacilitiesEvaluated();
+            const transformFacilityResult = await transformFacility(
               service,
               regFormSubmission,
               regFormId,
@@ -118,12 +126,30 @@ export class ConfigRunner {
               colorDecider,
               logger
             );
-            const { modified: moded, error: modError } = modificationStatus;
-            evaluatedSubmissions++;
-            if (moded) {
-              modified++;
+
+            let resultCode = transformFacilityResult.detail?.code;
+
+            // TODO - refactor all this.
+            if (transformFacilityResult.isFailure) {
+              if (!resultCode) resultCode = UNKNOWN_TRANSFORM_FACILITY_ERROR;
+              reporter.updateEvaluatedNotModified(resultCode);
+            } else if (
+              transformFacilityResult.isSuccess &&
+              (transformFacilityResult.detail as SuccessResultDetail)?.colorChange === undefined
+            ) {
+              if (!resultCode) {
+                resultCode = UNKNOWN_SUCCESS_REASON;
+              }
+              reporter.updateEvaluatedNotModified(resultCode);
             } else {
-              modError ? notModifiedWithError++ : notModifiedWithoutError++;
+              if (!resultCode) {
+                resultCode = UNKNOWN_SUCCESS_REASON;
+              }
+              // console.log("=======>", resultCode, (transformFacilityResult.detail))
+              reporter.updateEvaluatedModified(
+                resultCode,
+                (transformFacilityResult.detail as SuccessResultDetail)?.colorChange as string
+              );
             }
           }
         );
@@ -133,8 +159,9 @@ export class ConfigRunner {
           const end = cursor + editSubmissionsChunks;
           const chunksToSend = updateRegFormSubmissionsPromises.slice(cursor, end);
           cursor = cursor + editSubmissionsChunks;
-          await Promise.allSettled(chunksToSend.map((x) => x()));
+          await Promise.allSettled(chunksToSend.map((x) => x())).then((d) => console.log({ d }));
         }
+        yield reporter.generateJsonReport();
       }
     }
     logger?.(
@@ -142,20 +169,13 @@ export class ConfigRunner {
         `Finished form pair {regFormId: ${config.regFormId}, visitFormId: ${config.visitFormId}}`
       )
     );
-    yield createMetric(
-      evaluatedSubmissions,
-      notModifiedWithoutError,
-      notModifiedWithError,
-      modified,
-      totalRegFormSubmissions,
-      true
-    );
+    yield reporter.generateJsonReport(true);
   }
 
   /** Wrapper  around the transform generator, collates the metrics and calls a callback that
    * inverts the control of writing the metric information to the configs writeMetric method.
    */
-  async transform() {
+  async transform(triggeredVia: TriggeredBy = 'schedule') {
     const config = this.config;
     if (this.invalidError) {
       return Result.fail(`Configuration is not valid, ${this.invalidError}`);
@@ -167,8 +187,8 @@ export class ConfigRunner {
     } else {
       this.running = true;
       let finalMetric;
-      for await (const metric of this.transformGenerator()) {
-        WriteMetric(metric);
+      for await (const metric of this.transformGenerator(triggeredVia)) {
+        WriteMetric(metric as any);
         finalMetric = metric;
       }
       this.running = false;

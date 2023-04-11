@@ -55,3 +55,11 @@ export function convertCronToHuman(cronString: string) {
 export function formatTimestamp(timeStamp: number) {
 	return new Date(timeStamp).toLocaleString();
 }
+
+
+export function formatTriggerDuration(start?: number, end?: number){
+	if (start && end){
+		return `${formatTimestamp(start)}  to  ${formatTimestamp(end)} (${((end - start) / 60000).toFixed(0)} mins)`
+	}
+		return `${start ? formatTimestamp(start): "-"}  to  ${end ? formatTimestamp(end): "-"}`
+}

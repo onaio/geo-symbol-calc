@@ -10,10 +10,11 @@ import { v4 } from 'uuid';
 import { BaseFormSubmission, Color, Form, LogFn, RegFormSubmission } from '../../helpers/types';
 import { createErrorLog, createInfoLog, createVerboseLog } from '../../helpers/utils';
 import fetchRetry, { RequestInitWithRetry } from 'fetch-retry';
-import { Result } from '../../helpers/Result';
+import { NETWORK_ERROR, Result } from '../../helpers/Result';
 
 const persistentFetch = fetchRetry(fetch);
 
+// TODO - move Result codes reporting into custom fetch as well.
 /** Wrapper around the default fetch function. Adds a retyr mechanism based on exponential backof
  * @param input - url or a request object representing the request to be made
  * @param init - fetch options.
@@ -105,7 +106,7 @@ export class OnaApiService {
         this.logger?.(
           createErrorLog(`Operation to fetch form: ${formId}, failed with err: ${err}`)
         );
-        return Result.fail<Form>(err);
+        return Result.fail<Form>(err, NETWORK_ERROR);
       });
   }
 
@@ -157,12 +158,12 @@ export class OnaApiService {
     getSubmissionsPath: string = submittedDataEndpoint
   ) {
     const fullSubmissionsUrl = `${this.baseUrl}/${getSubmissionsPath}/${formId}`;
-    let page = 1;
+    let page = 0;
 
     do {
       const query = {
         page_size: `${pageSize}`,
-        page: `${page}`,
+        page: `${page + 1}`,
         ...extraQueryObj
       };
       const sParams = new URLSearchParams(query);
@@ -190,7 +191,11 @@ export class OnaApiService {
               `Unable to fetch submissions for form id: ${formId} page: ${paginatedSubmissionsUrl} with err : ${err.message}`
             )
           );
-          return Result.fail<FormSubmissionT[]>(err.message);
+          let recsAffected = pageSize;
+          if((totalSubmissions - (page * pageSize)) < pageSize )[
+            recsAffected = totalSubmissions - (page * pageSize)
+          ]
+          return Result.fail<FormSubmissionT[]>(err.message, {code: NETWORK_ERROR, recsAffected, });
         });
     } while (page * pageSize <= totalSubmissions);
   }
@@ -244,7 +249,7 @@ export class OnaApiService {
             `Failed to edit sumbission with _id: ${submissionPayload._id} for form with id: ${formId} with err: ${err.message}`
           )
         );
-        return Result.fail(err);
+        return Result.fail(err, NETWORK_ERROR);
       });
   }
 }

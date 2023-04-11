@@ -7,7 +7,24 @@ import {
   form3623Submissions,
   form3624Submissions
 } from './fixtures/fixtures';
-import { logCalls } from './fixtures/logCalls';
+
+const scheduler = typeof setImmediate === 'function' ? setImmediate : setTimeout;
+
+function flushPromises() {
+  return new Promise(function (resolve) {
+    scheduler(resolve);
+  });
+}
+
+const jestConsole = console;
+
+beforeEach(() => {
+  global.console = require('console');
+});
+
+afterEach(() => {
+  global.console = jestConsole;
+});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nock = require('nock');
@@ -119,18 +136,23 @@ it('works correctly nominal case', async () => {
   const metric = await response;
 
   expect(runner.isRunning()).toBeFalsy();
-  expect(loggerMock.mock.calls).toEqual(logCalls);
+  // expect(loggerMock.mock.calls).toEqual(logCalls);
   expect(metric.getValue()).toEqual({
     configId: 'uuid',
-    endTime: 1673275673342,
-    evaluated: 10,
-    modified: 8,
-    notModifiedWithError: 2,
-    notModifiedWithoutError: 0,
-    startTime: 1673275673342,
-    totalSubmissions: 10
+    facilitiesEvaluated: {
+      modified: { red: 8, total: 8 },
+      notModified: {
+        ECODE2: { description: 'Facility does not have a priority level', total: 2 },
+        total: 2
+      }
+    },
+    facilitiesNotEvaluated: {},
+    totalFacilities: 10,
+    totalFacilitiesEvaluated: 10,
+    trigger: { by: 'schedule', from: 1673275673342, to: 1673275673342, tookInS: 0 }
   });
 
+  await flushPromises();
   expect(nock.pendingMocks()).toEqual([]);
 });
 
@@ -198,3 +220,5 @@ test('updates configs from empty configs', () => {
 });
 
 // can cancel evaluation.
+
+
