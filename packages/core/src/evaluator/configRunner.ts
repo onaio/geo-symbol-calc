@@ -145,7 +145,6 @@ export class ConfigRunner {
               if (!resultCode) {
                 resultCode = UNKNOWN_SUCCESS_REASON;
               }
-              // console.log("=======>", resultCode, (transformFacilityResult.detail))
               reporter.updateEvaluatedModified(
                 resultCode,
                 (transformFacilityResult.detail as SuccessResultDetail)?.colorChange as string
@@ -159,7 +158,7 @@ export class ConfigRunner {
           const end = cursor + editSubmissionsChunks;
           const chunksToSend = updateRegFormSubmissionsPromises.slice(cursor, end);
           cursor = cursor + editSubmissionsChunks;
-          await Promise.allSettled(chunksToSend.map((x) => x())).then((d) => console.log({ d }));
+          await Promise.allSettled(chunksToSend.map((x) => x()));
         }
         yield reporter.generateJsonReport();
       }
