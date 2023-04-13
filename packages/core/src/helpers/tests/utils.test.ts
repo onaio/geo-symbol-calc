@@ -31,41 +31,41 @@ describe('colorDecider', () => {
 
   it('Marks very high priotiry facilities correctly', () => {
     const submission = form3623Submissions[0] as RegFormSubmission;
-    expect(colorDecider(0, submission)).toEqual('green');
-    expect(colorDecider(2, submission)).toEqual('green');
-    expect(colorDecider(3, submission)).toEqual('green');
-    expect(colorDecider(4, submission)).toEqual('yellow');
-    expect(colorDecider(5, submission)).toEqual('red');
-    expect(colorDecider(99999, submission)).toEqual('red');
+    expect(colorDecider(0, submission).getValue()).toEqual('green');
+    expect(colorDecider(2, submission).getValue()).toEqual('green');
+    expect(colorDecider(3, submission).getValue()).toEqual('green');
+    expect(colorDecider(4, submission).getValue()).toEqual('yellow');
+    expect(colorDecider(5, submission).getValue()).toEqual('red');
+    expect(colorDecider(99999, submission).getValue()).toEqual('red');
   });
 
   it('Marks high priotiry facilities correctly', () => {
     const submission = form3623Submissions[1] as RegFormSubmission;
-    expect(colorDecider(0, submission)).toEqual('green');
-    expect(colorDecider(6, submission)).toEqual('green');
-    expect(colorDecider(7, submission)).toEqual('green');
-    expect(colorDecider(8, submission)).toEqual('red');
-    expect(colorDecider(9, submission)).toEqual('red');
-    expect(colorDecider(99999, submission)).toEqual('red');
+    expect(colorDecider(0, submission).getValue()).toEqual('green');
+    expect(colorDecider(6, submission).getValue()).toEqual('green');
+    expect(colorDecider(7, submission).getValue()).toEqual('green');
+    expect(colorDecider(8, submission).getValue()).toEqual('red');
+    expect(colorDecider(9, submission).getValue()).toEqual('red');
+    expect(colorDecider(99999, submission).getValue()).toEqual('red');
   });
 
   it('Marks medium priotiry facilities correctly', () => {
     const submission = form3623Submissions[3] as RegFormSubmission;
-    expect(colorDecider(0, submission)).toEqual('green');
-    expect(colorDecider(13, submission)).toEqual('green');
-    expect(colorDecider(14, submission)).toEqual('green');
-    expect(colorDecider(15, submission)).toEqual('red');
-    expect(colorDecider(16, submission)).toEqual('red');
-    expect(colorDecider(99999, submission)).toEqual('red');
+    expect(colorDecider(0, submission).getValue()).toEqual('green');
+    expect(colorDecider(13, submission).getValue()).toEqual('green');
+    expect(colorDecider(14, submission).getValue()).toEqual('green');
+    expect(colorDecider(15, submission).getValue()).toEqual('red');
+    expect(colorDecider(16, submission).getValue()).toEqual('red');
+    expect(colorDecider(99999, submission).getValue()).toEqual('red');
   });
 
   it('Marks low priotiry facilities correctly', () => {
     const submission = form3623Submissions[2] as RegFormSubmission;
-    expect(colorDecider(0, submission)).toEqual('green');
-    expect(colorDecider(29, submission)).toEqual('green');
-    expect(colorDecider(30, submission)).toEqual('green');
-    expect(colorDecider(31, submission)).toEqual('red');
-    expect(colorDecider(32, submission)).toEqual('red');
-    expect(colorDecider(99999, submission)).toEqual('red');
+    expect(colorDecider(0, submission).getValue()).toEqual('green');
+    expect(colorDecider(29, submission).getValue()).toEqual('green');
+    expect(colorDecider(30, submission).getValue()).toEqual('green');
+    expect(colorDecider(31, submission).getValue()).toEqual('red');
+    expect(colorDecider(32, submission).getValue()).toEqual('red');
+    expect(colorDecider(99999, submission).getValue()).toEqual('red');
   });
 });
