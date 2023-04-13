@@ -12,7 +12,7 @@ const combinedLogFilePath = getConfig(combinedLogFilePathAccessor, '') as string
 const logger = createLogger({
 	transports: [
 		new transports.Console({
-			level: 'silly'
+			level: 'error'
 		})
 	],
 	// handle Uncaught Exceptions

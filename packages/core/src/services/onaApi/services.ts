@@ -29,6 +29,7 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
     retries: numOfRetries,
     retryOn: function (_, error, response) {
       let retry = false;
+      console.log("======>", {response, error, _})
       const method = init?.method ?? 'GET';
       if (error && error.name !== AbortErrorName) {
         retry = method === 'GET';
@@ -52,6 +53,8 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
     }
   };
   const response = await persistentFetch(input, requestOptionsWithRetry).catch((err) => {
+
+    console.log("****************************************",{err})
     throw Error(`${err.name}: ${err.message}.`);
   });
   if (response?.ok) {
@@ -244,6 +247,7 @@ export class OnaApiService {
         });
       })
       .catch((err) => {
+        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$44",{err, body: JSON.stringify(payload)})
         this.logger?.(
           createErrorLog(
             `Failed to edit sumbission with _id: ${submissionPayload._id} for form with id: ${formId} with err: ${err.message}`
