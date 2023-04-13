@@ -103,8 +103,14 @@ describe('transform facility tests', () => {
     );
 
     expect(response).toEqual({
-      error: null,
-      modified: true
+      _value: undefined,
+      detail: {
+        code: 'SCODE1',
+        colorChange: 'green'
+      },
+      error: undefined,
+      isFailure: false,
+      isSuccess: true
     });
   });
 
@@ -166,7 +172,16 @@ describe('transform facility tests', () => {
       logger
     );
 
-    expect(response.modified).toBeFalsy();
+    expect(response).toEqual({
+      _value: undefined,
+      detail: {
+        code: 'ECODE3',
+        recsAffected: 0
+      },
+      error: '400: {"message":"error"}: Network request failed.',
+      isFailure: true,
+      isSuccess: false
+    });
     expect(response.error).toEqual('400: {"message":"error"}: Network request failed.');
   });
 
@@ -221,8 +236,14 @@ describe('transform facility tests', () => {
     controller.abort();
     await response.then((value) => {
       expect(value).toEqual({
-        error: 'aborted: AbortError: The user aborted a request..',
-        modified: false
+        _value: undefined,
+        detail: {
+          code: 'ECODE3',
+          recsAffected: 0
+        },
+        error: 'AbortError: The user aborted a request..',
+        isFailure: true,
+        isSuccess: false
       });
     });
   });

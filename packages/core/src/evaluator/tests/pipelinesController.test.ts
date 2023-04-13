@@ -144,12 +144,13 @@ it('works correctly nominal case', async () => {
       notModified: {
         ECODE2: { description: 'Facility does not have a priority level', total: 2 },
         total: 2
-      }
+      },
+      total: 10
     },
-    facilitiesNotEvaluated: {},
+    facilitiesNotEvaluated: { total: 0 },
     totalFacilities: 10,
     totalFacilitiesEvaluated: 10,
-    trigger: { by: 'schedule', from: 1673275673342, to: 1673275673342, tookInS: 0 }
+    trigger: { by: 'schedule', from: 1673275673342, to: 1673275673342, tookMills: 0 }
   });
 
   await flushPromises();
@@ -161,7 +162,7 @@ it('error when fetching the registration form', async () => {
   const configs = createConfigs(loggerMock);
 
   // mock fetched firstform
-  nock(configs.baseUrl).get(`/${formEndpoint}/3623`).replyWithError('Could not find form with id');
+  nock(configs.baseUrl).get(`/${formEndpoint}/3623`).reply(400, 'Could not find form with id');
 
   const pipelinesController = new PipelinesController(() => [configs]);
   const configRunner = pipelinesController.getPipelines(configs.uuid) as ConfigRunner;
@@ -175,7 +176,7 @@ it('error when fetching the registration form', async () => {
       {
         level: 'error',
         message:
-          'Operation to fetch form: 3623, failed with err: Error: system: FetchError: request to https://test-api.ona.io/api/v1/forms/3623 failed, reason: Could not find form with id.'
+          'Operation to fetch form: 3623, failed with err: Error: 400: Could not find form with id: Network request failed.'
       }
     ]
   ]);
@@ -220,5 +221,3 @@ test('updates configs from empty configs', () => {
 });
 
 // can cancel evaluation.
-
-
