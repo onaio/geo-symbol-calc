@@ -3172,7 +3172,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:^3.4.1":
+"chokidar@npm:^3.4.1, chokidar@npm:^3.5.3":
   version: 3.5.3
   resolution: "chokidar@npm:3.5.3"
   dependencies:
@@ -7048,6 +7048,7 @@ eslint-config-turbo@latest:
     "@types/jest": ^29.1.2
     babel-jest: ^29.1.2
     babel-plugin-transform-es2015-modules-commonjs: ^6.26.2
+    chokidar: ^3.5.3
     eslint: ^8.0.0
     eslint-config-custom: "*"
     husky: ^8.0.1
