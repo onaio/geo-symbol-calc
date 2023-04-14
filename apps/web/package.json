@@ -36,6 +36,7 @@
 	},
 	"dependencies": {
 		"@onaio/symbology-calc-core": "*",
+		"chokidar": "^3.5.3",
 		"config": "^3.3.8",
 		"cronstrue": "^2.14.0",
 		"import-fresh": "^3.3.0",

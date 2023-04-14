@@ -7048,7 +7048,6 @@ eslint-config-turbo@latest:
     "@types/jest": ^29.1.2
     babel-jest: ^29.1.2
     babel-plugin-transform-es2015-modules-commonjs: ^6.26.2
-    chokidar: ^3.5.3
     eslint: ^8.0.0
     eslint-config-custom: "*"
     husky: ^8.0.1
@@ -8137,6 +8136,7 @@ eslint-config-turbo@latest:
     "@typescript-eslint/eslint-plugin": ^5.27.0
     "@typescript-eslint/parser": ^5.27.0
     "@zerodevx/svelte-toast": ^0.8.2
+    chokidar: ^3.5.3
     config: ^3.3.8
     cronstrue: ^2.14.0
     eslint: ^8.16.0
