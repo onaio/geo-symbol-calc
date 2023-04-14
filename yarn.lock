@@ -3172,7 +3172,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:^3.4.1":
+"chokidar@npm:^3.4.1, chokidar@npm:^3.5.3":
   version: 3.5.3
   resolution: "chokidar@npm:3.5.3"
   dependencies:
@@ -8136,6 +8136,7 @@ eslint-config-turbo@latest:
     "@typescript-eslint/eslint-plugin": ^5.27.0
     "@typescript-eslint/parser": ^5.27.0
     "@zerodevx/svelte-toast": ^0.8.2
+    chokidar: ^3.5.3
     config: ^3.3.8
     cronstrue: ^2.14.0
     eslint: ^8.16.0

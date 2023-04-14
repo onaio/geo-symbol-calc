@@ -1,15 +1,20 @@
 import { pipelineController } from '$lib/server/appConfig';
-import { configDir } from '$lib/server/constants';
-import { watch } from 'node:fs/promises';
+import { localConfigFile } from '$lib/server/constants';
+import { logger } from '$lib/server/logger/winston';
+import { watch } from 'chokidar';
 
 pipelineController.runOnSchedule();
 
+// Watch the file for changes
+const watcher = watch(localConfigFile);
+
 (async () => {
-	const watcher = watch(configDir);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	for await (const _event of watcher) {
-		if (_event.eventType === 'change' && _event.filename === 'local.json') {
+	watcher
+		.on('change', (path) => {
+			logger.info(`Local config file at ${path} was changed`);
 			pipelineController.refreshConfigRunners();
-		}
-	}
+		})
+		.on('error', (error) => {
+			logger.error(`Error reading local config file: ${error}`);
+		});
 })();
