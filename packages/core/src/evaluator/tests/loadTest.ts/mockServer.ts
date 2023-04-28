@@ -56,7 +56,7 @@ function generateSingleVisitSub(facilitId: number, geoLocation = {}) {
     'meta/instanceID': `uuid:${uuid}`,
     'meta/deprecatedID': `uuid:${datatype.uuid()}`,
     _geolocation: geoLocation,
-    date_of_visit: formatVisitDate(dateOfVisit)
+    endtime: formatVisitDate(dateOfVisit)
   };
 }
 

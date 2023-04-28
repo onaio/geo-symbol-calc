@@ -81,7 +81,7 @@ it('works correctly nominal case', async () => {
         page_size: 1,
         page: 1,
         query: `{"facility": ${facilityId}}`,
-        sort: '{"date_of_visit": -1}'
+        sort: '{"endtime": -1}'
       })
       .reply(
         200,

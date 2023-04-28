@@ -4,7 +4,7 @@ export const editSubmissionEndpoint = 'api/v1/submissions' as const;
 
 // field accessor names
 export const markerColorAccessor = 'marker-color';
-export const dateOfVisitAccessor = 'date_of_visit';
+export const dateOfVisitAccessor = 'endtime';
 export const priorityLevelAccessor = 'priority_level';
 export const numOfSubmissionsAccessor = 'num_of_submissions';
 

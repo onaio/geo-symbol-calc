@@ -103,7 +103,7 @@ export interface RegFormSubmission extends BaseFormSubmission {
 }
 
 export interface VisitFormSubmission extends BaseFormSubmission {
-  date_of_visit: string;
+  endtime: string;
 }
 
 export interface Form {
