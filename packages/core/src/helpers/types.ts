@@ -23,7 +23,7 @@ export interface Config {
   // an id: helps with managing the configs
   uuid: string;
   // title: human readable string that identifies config
-  title: string;
+  title?: string;
   // id for form used to register the geo points
   regFormId: string;
   // id for form used by Health workers to visit added geopoints
@@ -44,16 +44,6 @@ export interface Config {
   editSubmissionChunks?: number;
   // store metric; progress information regarding a running pipeline or the last run of an pipeline
   writeMetric: WriteMetric;
-  // field accessor field names
-  fieldAccessors: {
-    regForm:{
-      markerColorAccessor?: string;
-      priorityLevelAccessor?: string;
-    },
-    visitForm: {
-      dateOfVisitAccessor?: string;
-    }
-  }
 }
 
 export enum PriorityLevel {
@@ -113,7 +103,7 @@ export interface RegFormSubmission extends BaseFormSubmission {
 }
 
 export interface VisitFormSubmission extends BaseFormSubmission {
-  endtime: string;
+  date_of_visit: string;
 }
 
 export interface Form {

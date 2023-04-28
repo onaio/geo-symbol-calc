@@ -3,9 +3,9 @@ export const formEndpoint = 'api/v1/forms' as const;
 export const editSubmissionEndpoint = 'api/v1/submissions' as const;
 
 // field accessor names
-export const defualtMarkerColorAccessor = 'marker-color';
-export const defaultDateOfVisitAccessor = 'endtime';
-export const defaultPriorityLevelAccessor = 'priority_level';
+export const markerColorAccessor = 'marker-color';
+export const dateOfVisitAccessor = 'date_of_visit';
+export const priorityLevelAccessor = 'priority_level';
 export const numOfSubmissionsAccessor = 'num_of_submissions';
 
 // magic strings
