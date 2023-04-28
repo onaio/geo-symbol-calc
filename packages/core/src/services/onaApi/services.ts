@@ -3,7 +3,7 @@ import {
   AbortErrorName,
   editSubmissionEndpoint,
   formEndpoint,
-  markerColorAccessor,
+  defualtMarkerColorAccessor,
   submittedDataEndpoint
 } from '../../constants';
 import { v4 } from 'uuid';
@@ -192,10 +192,10 @@ export class OnaApiService {
             )
           );
           let recsAffected = pageSize;
-          if((totalSubmissions - (page * pageSize)) < pageSize )[
+          if ((totalSubmissions - (page * pageSize)) < pageSize) [
             recsAffected = totalSubmissions - (page * pageSize)
           ]
-          return Result.fail<FormSubmissionT[]>(err.message, {code: NETWORK_ERROR, recsAffected, });
+          return Result.fail<FormSubmissionT[]>(err.message, { code: NETWORK_ERROR, recsAffected, });
         });
     } while (page * pageSize <= totalSubmissions);
   }
@@ -268,7 +268,7 @@ export async function upLoadMarkerColor(
 ) {
   const newSubmission = {
     ...submission,
-    [markerColorAccessor]: colorCode
+    [defualtMarkerColorAccessor]: colorCode
   };
   return service.editSubmission(formId, newSubmission);
 }

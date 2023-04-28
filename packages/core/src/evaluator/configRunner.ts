@@ -1,6 +1,6 @@
 import { OnaApiService } from '../services/onaApi/services';
 import { RegFormSubmission, Config } from '../helpers/types';
-import { numOfSubmissionsAccessor } from '../constants';
+import { defaultDateOfVisitAccessor, defualtMarkerColorAccessor, numOfSubmissionsAccessor, defaultPriorityLevelAccessor } from '../constants';
 import {
   createInfoLog,
   createErrorLog,
@@ -33,7 +33,9 @@ import { ReportMetric, TriggeredBy } from './metricReporter';
  * with through the pipelines controller class.
  */
 export class ConfigRunner {
-  /** holds the json symbol config */
+  /** holds the raw json symbol config */
+  public rawConfig: Config;
+  /** holds the parsed final version of the raw symbol config */
   public config: Config;
   /** Whether pipeline/runner is currently evaluating */
   private running = false;
@@ -45,7 +47,8 @@ export class ConfigRunner {
   // private reporter: ReportMetric;
 
   constructor(config: Config) {
-    this.config = config;
+    this.rawConfig = config
+    this.config = this.addDefaultValues(config);
     this.abortController = new AbortController();
     try {
       validateConfigs(config);
@@ -53,6 +56,34 @@ export class ConfigRunner {
       this.invalidError = (err as Error).message;
     }
     // this.reporter = new ReportMetric(config.uuid);
+  }
+
+  private addDefaultValues(rawConfig: Config) {
+    const {
+
+      regFormSubmissionChunks,
+      editSubmissionChunks,
+      writeMetric,
+      fieldAccessors,
+    } = rawConfig;
+    return {
+      ...rawConfig,
+      regFormSubmissionChunks: regFormSubmissionChunks ?? 1000,
+      editSubmissionChunks: editSubmissionChunks ?? 100,
+      writeMetric: writeMetric ?? defaultWriteMetric,
+      fieldAccessors: {
+        ...fieldAccessors,
+        regForm: {
+          ...fieldAccessors.regForm,
+          markerColorAccessor: fieldAccessors.regForm.markerColorAccessor ?? defualtMarkerColorAccessor,
+          priorityLevelAccessor: fieldAccessors.regForm.priorityLevelAccessor ?? defaultPriorityLevelAccessor
+        },
+        visitForm: {
+          ...fieldAccessors.visitForm,
+          dateOfVisitAccessor: fieldAccessors.visitForm.dateOfVisitAccessor ?? defaultDateOfVisitAccessor,
+        }
+      }
+    }
   }
 
   /** Runs the pipeline, generator that yields metric information regarding the current run */

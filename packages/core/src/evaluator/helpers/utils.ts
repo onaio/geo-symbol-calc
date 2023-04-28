@@ -1,4 +1,4 @@
-import { markerColorAccessor } from '../../constants';
+import { defualtMarkerColorAccessor } from '../../constants';
 import { OnaApiService, upLoadMarkerColor } from '../../services/onaApi/services';
 import { RegFormSubmission, LogFn, timestamp, uuid, Metric } from '../../helpers/types';
 import {
@@ -50,7 +50,7 @@ export async function transformFacility(
   }
   const color = colorResult.getValue();
 
-  if (regFormSubmission[markerColorAccessor] === color) {
+  if (regFormSubmission[defualtMarkerColorAccessor] === color) {
     logger?.(
       createInfoLog(
         `facility _id: ${facilityId} submission already has the correct color, no action needed`
@@ -88,25 +88,25 @@ export async function transformFacility(
  */
 export const createMetricFactory =
   (startTime: timestamp, configId: uuid) =>
-  (
-    evaluated: number,
-    notModifiedWithoutError: number,
-    notModifiedWithError: number,
-    modified: number,
-    totalSubmissions: number,
-    end?: boolean
-  ) => {
-    return {
-      configId,
-      startTime,
-      endTime: end ? Date.now() : null,
-      evaluated,
-      notModifiedWithoutError,
-      notModifiedWithError,
-      modified,
-      totalSubmissions
-    } as Metric;
-  };
+    (
+      evaluated: number,
+      notModifiedWithoutError: number,
+      notModifiedWithError: number,
+      modified: number,
+      totalSubmissions: number,
+      end?: boolean
+    ) => {
+      return {
+        configId,
+        startTime,
+        endTime: end ? Date.now() : null,
+        evaluated,
+        notModifiedWithoutError,
+        notModifiedWithError,
+        modified,
+        totalSubmissions
+      } as Metric;
+    };
 
 // /** types of categories that we start with:
 //  * 1. no priority level -  ECODE001
