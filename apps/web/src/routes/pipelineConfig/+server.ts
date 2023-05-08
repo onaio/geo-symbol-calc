@@ -7,6 +7,18 @@ import { json } from '@sveltejs/kit';
 import { getAllSymbologyConfigs } from '$lib/server/appConfig';
 import { keyBy } from 'lodash-es';
 import { deleteMetricForConfig } from '$lib/server/logger/configMetrics';
+import {prisma} from '$lib/db'
+
+/***
+ * - add CRUD methods for working with symbolConfigs
+ */
+
+/** @type {import('./$types').RequestHandler} */
+export async function GET(){
+	const recs = prisma.symbolConfig.findMany()
+	// TODO - 
+	return json(recs)
+}
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
