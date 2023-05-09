@@ -7,6 +7,7 @@ export const markerColorAccessor = 'marker-color';
 export const dateOfVisitAccessor = 'endtime';
 export const priorityLevelAccessor = 'priority_level';
 export const numOfSubmissionsAccessor = 'num_of_submissions';
+export const facilityOnVisitFormAcccessor = 'geoloc/facility';
 
 // magic strings
 export const AbortErrorName = 'AbortError';
