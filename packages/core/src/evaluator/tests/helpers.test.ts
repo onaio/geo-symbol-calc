@@ -5,6 +5,7 @@ import { colorDeciderFactory } from '../../helpers/utils';
 import {
   dateOfVisitAccessor,
   editSubmissionEndpoint,
+  facilityOnVisitFormAcccessor,
   submittedDataEndpoint
 } from '../../constants';
 import { RegFormSubmission } from '../../helpers/types';
@@ -70,7 +71,7 @@ describe('transform facility tests', () => {
       .query({
         page_size: 1,
         page: 1,
-        query: `{"facility": ${regFomSubmission._id}}`, // filter visit submissions for this facility
+        query: `{"${facilityOnVisitFormAcccessor}": ${regFomSubmission._id}}`, // filter visit submissions for this facility
         sort: `{"${dateOfVisitAccessor}": -1}`
       })
       .reply(200, [{ [dateOfVisitAccessor]: '2023-01-08' }]);
@@ -129,7 +130,7 @@ describe('transform facility tests', () => {
       .query({
         page_size: 1,
         page: 1,
-        query: `{"facility": ${regFomSubmission._id}}`, // filter visit submissions for this facility
+        query: `{"${facilityOnVisitFormAcccessor}": ${regFomSubmission._id}}`, // filter visit submissions for this facility
         sort: `{"${dateOfVisitAccessor}": -1}`
       })
       .reply(502, { message: 'error' });
@@ -140,7 +141,7 @@ describe('transform facility tests', () => {
       .query({
         page_size: 1,
         page: 1,
-        query: `{"facility": ${regFomSubmission._id}}`, // filter visit submissions for this facility
+        query: `{"${facilityOnVisitFormAcccessor}": ${regFomSubmission._id}}`, // filter visit submissions for this facility
         sort: `{"${dateOfVisitAccessor}": -1}`
       })
       .reply(400, { message: 'error' });
@@ -201,7 +202,7 @@ describe('transform facility tests', () => {
       .query({
         page_size: 1,
         page: 1,
-        query: `{"facility": ${regFomSubmission._id}}`, // filter visit submissions for this facility
+        query: `{"${facilityOnVisitFormAcccessor}": ${regFomSubmission._id}}`, // filter visit submissions for this facility
         sort: `{"${dateOfVisitAccessor}": -1}`
       })
       .reply(200, [{ [dateOfVisitAccessor]: '2023-01-08' }]);

@@ -1,4 +1,9 @@
-import { editSubmissionEndpoint, formEndpoint, submittedDataEndpoint } from '../../constants';
+import {
+  editSubmissionEndpoint,
+  facilityOnVisitFormAcccessor,
+  formEndpoint,
+  submittedDataEndpoint
+} from '../../constants';
 import { ConfigRunner } from '../configRunner';
 import { PipelinesController } from '../pipelinesController';
 import {
@@ -80,7 +85,7 @@ it('works correctly nominal case', async () => {
       .query({
         page_size: 1,
         page: 1,
-        query: `{"facility": ${facilityId}}`,
+        query: `{"${facilityOnVisitFormAcccessor}": ${facilityId}}`,
         sort: '{"endtime": -1}'
       })
       .reply(
