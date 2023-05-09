@@ -13,9 +13,18 @@ import {
 } from './types';
 import * as yup from 'yup';
 import nodeCron from 'node-cron';
-import { dateOfVisitAccessor, priorityLevelAccessor } from '../constants';
+import {
+  dateOfVisitAccessor,
+  facilityOnVisitFormAcccessor,
+  priorityLevelAccessor
+} from '../constants';
 import { OnaApiService } from '../services/onaApi/services';
-import { MISSING_PRIORITY_LEVEL, NO_VISIT_SUBMISSIONS, Result, UNRECOGNIZED_PRIORITY_LEVEL } from './Result';
+import {
+  MISSING_PRIORITY_LEVEL,
+  NO_VISIT_SUBMISSIONS,
+  Result,
+  UNRECOGNIZED_PRIORITY_LEVEL
+} from './Result';
 
 export const createInfoLog = (message: string) => ({ level: LogMessageLevels.INFO, message });
 export const createWarnLog = (message: string) => ({ level: LogMessageLevels.WARN, message });
@@ -48,16 +57,16 @@ export const colorDeciderFactory = (symbolConfig: SymbologyConfig, logger?: LogF
 
     if (!thisFacilityPriority) {
       logger?.(createWarnLog(`facility _id: ${submission._id} does not have a priority_level`));
-      return Result.fail("Missing priority level", MISSING_PRIORITY_LEVEL);
+      return Result.fail('Missing priority level', MISSING_PRIORITY_LEVEL);
     }
 
     // TODO - risky coupling.
     const symbologyConfigByPriorityLevel = keyBy(orderedSymbologyConfig, 'priorityLevel');
     const symbologyConfig = symbologyConfigByPriorityLevel[thisFacilityPriority];
     // TODO -  when priority_level is unrecognized. - do we need to also report facilities affected by this errors
-    if(symbolConfig === undefined){
-      logger?.(createWarnLog("Unrecognized priority level"))
-      return Result.fail("Unrecognized priority level", UNRECOGNIZED_PRIORITY_LEVEL)
+    if (symbolConfig === undefined) {
+      logger?.(createWarnLog('Unrecognized priority level'));
+      return Result.fail('Unrecognized priority level', UNRECOGNIZED_PRIORITY_LEVEL);
     }
 
     const overflowsConfig = symbologyConfig.symbologyOnOverflow;
@@ -116,11 +125,10 @@ export async function getMostRecentVisitDateForFacility(
   visitFormId: string,
   logger?: LogFn
 ) {
-
   // can run into an error,
   // can  yield an empty result.
   const query = {
-    query: `{"facility": ${facilityId}}`, // filter visit submissions for this facility
+    query: `{"${facilityOnVisitFormAcccessor}": ${facilityId}}`, // filter visit submissions for this facility
     sort: `{"${dateOfVisitAccessor}": -1}` // sort in descending, most recent first.
   };
 
@@ -128,10 +136,10 @@ export async function getMostRecentVisitDateForFacility(
   const formSubmissionIterator =
     service.fetchPaginatedFormSubmissionsGenerator<VisitFormSubmission>(visitFormId, 1, query, 1);
 
-    const visitSubmissionsResult = (await formSubmissionIterator
-      .next()
-      .then((res) => res.value)) as Result<VisitFormSubmission[]>;
-    
+  const visitSubmissionsResult = (await formSubmissionIterator
+    .next()
+    .then((res) => res.value)) as Result<VisitFormSubmission[]>;
+
   if (visitSubmissionsResult.isFailure) {
     logger?.(
       createErrorLog(
