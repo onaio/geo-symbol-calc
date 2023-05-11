@@ -46,8 +46,8 @@ const orderSymbologyConfig = (config: SymbologyConfig) => {
   });
 };
 
-export const colorDeciderFactory = (symbolConfig: SymbologyConfig, logger?: LogFn) => {
-  const orderedSymbologyConfig = orderSymbologyConfig(symbolConfig);
+export const colorDeciderFactory = (pipelineConfig: SymbologyConfig, logger?: LogFn) => {
+  const orderedSymbologyConfig = orderSymbologyConfig(pipelineConfig);
 
   const colorDecider = (
     recentVisitDiffToNow: number | typeof Infinity,
@@ -64,7 +64,7 @@ export const colorDeciderFactory = (symbolConfig: SymbologyConfig, logger?: LogF
     const symbologyConfigByPriorityLevel = keyBy(orderedSymbologyConfig, 'priorityLevel');
     const symbologyConfig = symbologyConfigByPriorityLevel[thisFacilityPriority];
     // TODO -  when priority_level is unrecognized. - do we need to also report facilities affected by this errors
-    if (symbolConfig === undefined) {
+    if (symbologyConfig === undefined) {
       logger?.(createWarnLog('Unrecognized priority level'));
       return Result.fail('Unrecognized priority level', UNRECOGNIZED_PRIORITY_LEVEL);
     }
