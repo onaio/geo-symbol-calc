@@ -23,7 +23,7 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
   // The exponential backoff strategy can be hardcoded, should it be left to the calling function.
   // post requests are not idempotent
   const numOfRetries = 10;
-  const delayConstant = 500; //ms
+  const delayConstant = 15000; //ms
   const requestOptionsWithRetry: RequestInitWithRetry = {
     ...init,
     retries: numOfRetries,
@@ -36,23 +36,23 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
       if (response) {
         const status = response?.status;
         // retry on all server side error http codes.
-        retry = status >= 500 && status < 600;
+        retry = (status >= 500 && status < 600) || ([429].includes(status));
       }
 
       if (retry) {
         const msg = response
-          ? `Retrying request; request respondend with status: ${response?.status}`
-          : 'Retrying request, Request does not have a response';
+          ? `Retrying request ${input}; request respondend with status: ${response?.status}`
+          : `Retrying request ${input}, Request does not have a response`;
         logger?.(createVerboseLog(msg));
       }
       return retry;
     },
     retryDelay: function (attempt) {
-      return Math.pow(2, attempt) * delayConstant;
+      return attempt * delayConstant;
     }
   };
   const response = await persistentFetch(input, requestOptionsWithRetry).catch((err) => {
-    throw Error(`${err.name}: ${err.message}.`);
+    throw Error(`${response.status}: ${err.name}: ${err.message}.`);
   });
   if (response?.ok) {
     return response;

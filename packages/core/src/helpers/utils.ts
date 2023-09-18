@@ -55,10 +55,11 @@ export const colorDeciderFactory = (symbolConfig: SymbologyConfig, logger?: LogF
     const symbologyConfigByPriorityLevel = keyBy(orderedSymbologyConfig, 'priorityLevel');
     const symbologyConfig = symbologyConfigByPriorityLevel[thisFacilityPriority];
     // TODO -  when priority_level is unrecognized. - do we need to also report facilities affected by this errors
-    if(symbolConfig === undefined){
-      logger?.(createWarnLog("Unrecognized priority level"))
+    if(symbologyConfig === undefined){
+      logger?.(createWarnLog(`facility _id: ${submission._id} as priority_level ${thisFacilityPriority}: Unrecognized priority level`))
       return Result.fail("Unrecognized priority level", UNRECOGNIZED_PRIORITY_LEVEL)
     }
+
 
     const overflowsConfig = symbologyConfig.symbologyOnOverflow;
     let colorChoice = overflowsConfig[overflowsConfig.length - 1].color;
