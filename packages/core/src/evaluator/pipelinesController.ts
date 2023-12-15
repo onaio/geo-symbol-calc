@@ -125,7 +125,7 @@ export class PipelinesController {
     if (!interestingPipeline) {
       return Result.fail(`Pipeline with config ${configId} was not found`);
     }
-    interestingPipeline.transform();
+    interestingPipeline.transform('manual');
     return Result.ok('Pipeline triggered successfully, running in the background');
   }
 
