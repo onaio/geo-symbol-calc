@@ -41,7 +41,7 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
 
       if (retry) {
         const msg = response
-          ? `Retrying request ${input}; request respondend with status: ${response?.status}`
+          ? `Retrying request ${input}; request responded with status: ${response?.status}`
           : `Retrying request ${input}, Request does not have a response`;
         logger?.(createVerboseLog(msg));
       }
