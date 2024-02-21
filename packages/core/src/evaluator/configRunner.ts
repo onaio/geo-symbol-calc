@@ -38,7 +38,7 @@ export class ConfigRunner {
   /** Whether pipeline/runner is currently evaluating */
   private running = false;
   /** request abort controller */
-  private abortController;
+  // private abortController;
   /** stores validity of config */
   public invalidError: string | null = null;
   /** metric category store for each run */
@@ -46,7 +46,7 @@ export class ConfigRunner {
 
   constructor(config: Config) {
     this.config = config;
-    this.abortController = new AbortController();
+    // this.abortController = new AbortController();
     try {
       validateConfigs(config);
     } catch (err: unknown) {
@@ -77,7 +77,8 @@ export class ConfigRunner {
     let totalRegFormSubmissions = 0;
     yield reporter.generateJsonReport();
 
-    const service = new OnaApiService(baseUrl, apiToken, logger, this.abortController);
+    // const service = new OnaApiService(baseUrl, apiToken, logger, this.abortController);
+    const service = new OnaApiService(baseUrl, apiToken, logger);
     const colorDecider = colorDeciderFactory(symbolConfig, logger);
 
     abortableBlock: {
@@ -209,11 +210,11 @@ export class ConfigRunner {
 
   /** Cancel evaluation using a configured abortController */
   cancel() {
-    const abortController = this.abortController;
+    // const abortController = this.abortController;
     if (!this.running) {
       return;
     }
-    abortController.abort();
+    // abortController.abort();
     return Result.ok();
   }
 
