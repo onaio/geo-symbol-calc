@@ -1,0 +1,359 @@
+{
+  "allSymbologyConfigs": [
+    {
+      "title": "Gabon",
+      "baseUrl": "https://esurv.afro.who.int",
+      "regFormId": "9930",
+      "visitFormId": "1144",
+      "apiToken": "",
+      "symbolConfig": [
+        {
+          "priorityLevel": "Very_High",
+          "frequency": "3",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ffff00"
+            },
+            {
+              "overFlowDays": "4",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "High",
+          "frequency": "7",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Medium",
+          "frequency": "14",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Low",
+          "frequency": "30",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        }
+      ],
+      "schedule": "0 0 * * *",
+      "uuid": "14452132-955c-465d-a9e7-a29d984d3d6f"
+    },
+    {
+      "title": "Uganda",
+      "baseUrl": "https://esurv.afro.who.int",
+      "regFormId": "9161",
+      "visitFormId": "775",
+      "apiToken": "",
+      "symbolConfig": [
+        {
+          "priorityLevel": "Very_High",
+          "frequency": "3",
+          "symbologyOnOverflow": [
+            {
+              "color": "#03c04a",
+              "overFlowDays": "0"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ffff00"
+            },
+            {
+              "overFlowDays": "4",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "High",
+          "frequency": "7",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Medium",
+          "frequency": "14",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Low",
+          "frequency": "30",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        }
+      ],
+      "schedule": "0 1 * * *",
+      "uuid": "cf26eca2-b248-4e32-b19e-ec6bae2de68a"
+    },
+    {
+      "title": "Kinshasa Companion App",
+      "baseUrl": "https://esurv.afro.who.int",
+      "regFormId": "10439",
+      "visitFormId": "10406",
+      "apiToken": "",
+      "symbolConfig": [
+        {
+          "priorityLevel": "Very_High",
+          "frequency": "3",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ffff00"
+            },
+            {
+              "overFlowDays": "4",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "High",
+          "frequency": "7",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Medium",
+          "frequency": "14",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Low",
+          "frequency": "30",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        }
+      ],
+      "schedule": "0 3 * * *",
+      "uuid": "e8c5cc66-bfa5-4162-bd65-2dd41466ea18"
+    },
+    {
+      "title": "Malawi",
+      "baseUrl": "https://esurv.afro.who.int",
+      "regFormId": "10994",
+      "visitFormId": "1004",
+      "apiToken": "",
+      "symbolConfig": [
+        {
+          "priorityLevel": "Very_High",
+          "frequency": "3",
+          "symbologyOnOverflow": [
+            {
+              "color": "#03c04a",
+              "overFlowDays": "0"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ffff00"
+            },
+            {
+              "overFlowDays": "4",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "High",
+          "frequency": "7",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Medium",
+          "frequency": "14",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Low",
+          "frequency": "30",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        }
+      ],
+      "schedule": "0 4 * * *",
+      "uuid": "2b2ddab8-b6ba-4d34-87aa-a8e748a3e317"
+    },
+    {
+      "title": "Mozambique",
+      "baseUrl": "https://esurv.afro.who.int",
+      "regFormId": "11076",
+      "visitFormId": "11070",
+      "apiToken": "",
+      "symbolConfig": [
+        {
+          "priorityLevel": "Very_High",
+          "frequency": "3",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c05e"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ffff00"
+            },
+            {
+              "overFlowDays": "4",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "High",
+          "frequency": "7",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Medium",
+          "frequency": "14",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        },
+        {
+          "priorityLevel": "Low",
+          "frequency": "30",
+          "symbologyOnOverflow": [
+            {
+              "overFlowDays": "0",
+              "color": "#03c04a"
+            },
+            {
+              "overFlowDays": "1",
+              "color": "#ff0000"
+            }
+          ]
+        }
+      ],
+      "schedule": "0 5 * * *",
+      "uuid": "daea0820-e780-4b60-bc79-352a6fb13902"
+    }
+  ]
+}
