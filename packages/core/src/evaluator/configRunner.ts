@@ -91,7 +91,7 @@ export class ConfigRunner {
       totalRegFormSubmissions = regFormSubmissionsNum;
       reporter.updateTotalFacilities(totalRegFormSubmissions);
 
-      // fetches submissions for the first form.
+      // fetches submissions for the facility registration form.
       const regFormSubmissionsIterator = service.fetchPaginatedFormSubmissionsGenerator(
         regFormId,
         regFormSubmissionsNum,
