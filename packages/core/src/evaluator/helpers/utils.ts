@@ -1,4 +1,4 @@
-import { markerColorAccessor } from '../../constants';
+import { markerColorAccessor, submissionIdAccessor } from '../../constants';
 import { OnaApiService, upLoadMarkerColor } from '../../services/onaApi/services';
 import { RegFormSubmission, LogFn, timestamp, uuid, Metric } from '../../helpers/types';
 import {
@@ -29,7 +29,7 @@ export async function transformFacility(
   // let modifificationStatus: { modified: boolean; error: string | null } =
   //   createModificationStatus(false);
 
-  const facilityId = regFormSubmission._id;
+  const facilityId = regFormSubmission[submissionIdAccessor];
   const mostRecentVisitResult = await getMostRecentVisitDateForFacility(
     service,
     facilityId,
