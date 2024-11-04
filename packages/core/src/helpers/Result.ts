@@ -137,14 +137,18 @@ export class Result<T> {
     return new Result<U>(true, undefined, value, resultDetail);
   }
 
-  public static fail<U>(error: string, detail?: ResultDetail | ResultCodes): Result<U> {
+  public static fail<U>(error: Error | string, detail?: ResultDetail | ResultCodes): Result<U> {
+    let errorDesc = error as string
+    if(typeof error == 'object'){
+      errorDesc = getErrorDescription(error)
+    }
     let resultDetail;
     if (typeof detail === 'string') {
       resultDetail = { code: detail };
     } else {
       resultDetail = detail;
     }
-    return new Result<U>(false, error, undefined, resultDetail);
+    return new Result<U>(false, errorDesc, undefined, resultDetail);
   }
 
   public static bubbleFailure<NewType, OldType>(result: Result<OldType>): Result<NewType> {
@@ -154,4 +158,22 @@ export class Result<T> {
     }
     return this.fail<NewType>(result.error, result.detail);
   }
+}
+
+
+function getErrorDescription(error: Error){
+  const { name, message, cause } = error;
+  const code = (cause as Record<string, unknown>).code as string | undefined
+  const causeMessage = (cause as Record<string, unknown>).message as string | undefined
+  const errorDetails = [];
+
+  if (name) errorDetails.push(`Error Name: ${name}`);
+  if (message) errorDetails.push(`Message: ${message}`);
+  if (code) errorDetails.push(`Code: ${code}`);
+  if (causeMessage) errorDetails.push(`Cause Message: ${causeMessage}`);
+
+
+  return errorDetails.length > 0
+    ? errorDetails.join(' | ')
+    : "An unknown network error occurred.";
 }

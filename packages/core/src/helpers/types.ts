@@ -120,6 +120,7 @@ export interface Metric {
   notModifiedWithError: number;
   modified: number;
   totalSubmissions?: number;
+  generalErrors?: string[]
 }
 
 export interface WriteMetric {

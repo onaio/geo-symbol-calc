@@ -22,26 +22,26 @@ const persistentFetch = fetchRetry(fetch);
 export const customFetch = async (input: RequestInfo, init?: RequestInit, logger?: LogFn) => {
   // The exponential backoff strategy can be hardcoded, should it be left to the calling function.
   // post requests are not idempotent
-  const numOfRetries = 10;
-  const delayConstant = 15000; //ms
+  const numOfRetries = 5;
+  const delayConstant = 20000; //ms
   const requestOptionsWithRetry: RequestInitWithRetry = {
     ...init,
     retries: numOfRetries,
-    retryOn: function (attempt, error, response) {
+    retryOn: function (attempt, error, res) {
       let retry = false;
       const method = init?.method ?? 'GET';
       if (error && error.name !== AbortErrorName) {
         retry = method === 'GET';
       }
-      if (response) {
-        const status = response?.status;
+      if (res) {
+        const status = res?.status;
         // retry on all server side error http codes.
         retry = (status >= 500 && status < 600) || ([429].includes(status));
       }
 
       if (retry) {
-        const msg = response
-          ? `Retrying request ${input}; Attempt ${attempt}; request responded with status: ${response?.status}`
+        const msg = res
+          ? `Retrying request ${input}; Attempt ${attempt}; last attempt yielded ${res.status}; ${error?.name ?? "Unknown error"}; ${error?.message ?? "unknown Error description"}.`
           : `Retrying request ${input}; Attempt ${attempt}; Request does not have a response`;
         logger?.(createVerboseLog(msg));
       }
@@ -54,14 +54,8 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
       return attempt * delayConstant;
     }
   };
-  const response = await persistentFetch(input, requestOptionsWithRetry).catch((err) => {
-    throw Error(`${response.status}: ${err.name}: ${err.message}.`);
-  });
-  if (response?.ok) {
-    return response;
-  }
-  const text = await response.text();
-  throw Error(`${response.status}: ${text}: Network request failed.`);
+
+  return persistentFetch(input, requestOptionsWithRetry)
 };
 
 /** Service class that abstracts function calls to ona data api */
@@ -105,7 +99,7 @@ export class OnaApiService {
           return Result.ok<Form>(form);
         });
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         this.logger?.(
           createErrorLog(`Operation to fetch form: ${formId}, failed with err: ${err}`)
         );
@@ -198,7 +192,7 @@ export class OnaApiService {
           if((totalSubmissions - (page * pageSize)) < pageSize )[
             recsAffected = totalSubmissions - (page * pageSize)
           ]
-          return Result.fail<FormSubmissionT[]>(err.message, {code: NETWORK_ERROR, recsAffected, });
+          return Result.fail<FormSubmissionT[]>(err, {code: NETWORK_ERROR, recsAffected, });
         });
     } while (page * pageSize <= totalSubmissions);
   }
