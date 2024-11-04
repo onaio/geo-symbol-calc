@@ -27,7 +27,7 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
   const requestOptionsWithRetry: RequestInitWithRetry = {
     ...init,
     retries: numOfRetries,
-    retryOn: function (_, error, response) {
+    retryOn: function (attempt, error, response) {
       let retry = false;
       const method = init?.method ?? 'GET';
       if (error && error.name !== AbortErrorName) {
@@ -41,9 +41,12 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
 
       if (retry) {
         const msg = response
-          ? `Retrying request ${input}; request responded with status: ${response?.status}`
-          : `Retrying request ${input}, Request does not have a response`;
+          ? `Retrying request ${input}; Attempt ${attempt}; request responded with status: ${response?.status}`
+          : `Retrying request ${input}; Attempt ${attempt}; Request does not have a response`;
         logger?.(createVerboseLog(msg));
+      }
+      if(attempt >= numOfRetries){
+        retry = false
       }
       return retry;
     },
