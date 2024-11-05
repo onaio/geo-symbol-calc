@@ -22,28 +22,31 @@ const persistentFetch = fetchRetry(fetch);
 export const customFetch = async (input: RequestInfo, init?: RequestInit, logger?: LogFn) => {
   // The exponential backoff strategy can be hardcoded, should it be left to the calling function.
   // post requests are not idempotent
-  const numOfRetries = 10;
-  const delayConstant = 15000; //ms
+  const numOfRetries = 5;
+  const delayConstant = 20000; //ms
   const requestOptionsWithRetry: RequestInitWithRetry = {
     ...init,
     retries: numOfRetries,
-    retryOn: function (_, error, response) {
+    retryOn: function (attempt, error, res) {
       let retry = false;
       const method = init?.method ?? 'GET';
       if (error && error.name !== AbortErrorName) {
         retry = method === 'GET';
       }
-      if (response) {
-        const status = response?.status;
+      if (res) {
+        const status = res?.status;
         // retry on all server side error http codes.
         retry = (status >= 500 && status < 600) || ([429].includes(status));
       }
 
       if (retry) {
-        const msg = response
-          ? `Retrying request ${input}; request responded with status: ${response?.status}`
-          : `Retrying request ${input}, Request does not have a response`;
+        const msg = res
+          ? `Retrying request ${input}; Attempt ${attempt}; last attempt yielded ${res.status}; ${error?.name ?? "Unknown error"}; ${error?.message ?? "unknown Error description"}.`
+          : `Retrying request ${input}; Attempt ${attempt}; Request does not have a response`;
         logger?.(createVerboseLog(msg));
+      }
+      if (attempt >= numOfRetries) {
+        retry = false
       }
       return retry;
     },
@@ -51,14 +54,12 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
       return attempt * delayConstant;
     }
   };
-  const response = await persistentFetch(input, requestOptionsWithRetry).catch((err) => {
-    throw Error(`${response.status}: ${err.name}: ${err.message}.`);
-  });
-  if (response?.ok) {
-    return response;
+
+  const response = await persistentFetch(input, requestOptionsWithRetry)
+  if (response && !response.ok) {
+    throw throwHttpError(response)
   }
-  const text = await response.text();
-  throw Error(`${response.status}: ${text}: Network request failed.`);
+  return await response.json()
 };
 
 /** Service class that abstracts function calls to ona data api */
@@ -98,11 +99,9 @@ export class OnaApiService {
     return customFetch(formUrl, { ...this.getCommonFetchOptions() }, this.logger)
       .then((res) => {
         this.logger?.(createVerboseLog(`Fetched form wih form id: ${formId}`));
-        return res.json().then((form: Form) => {
-          return Result.ok<Form>(form);
-        });
+        return Result.ok<Form>(res);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         this.logger?.(
           createErrorLog(`Operation to fetch form: ${formId}, failed with err: ${err}`)
         );
@@ -176,14 +175,12 @@ export class OnaApiService {
         this.logger
       )
         .then((res) => {
-          return (res.json() as Promise<FormSubmissionT[]>).then((res) => {
-            this.logger?.(
-              createInfoLog(
-                `Fetched ${res.length} submissions for form id: ${formId} page: ${paginatedSubmissionsUrl}`
-              )
-            );
-            return Result.ok(res);
-          });
+          this.logger?.(
+            createInfoLog(
+              `Fetched ${res.length} submissions for form id: ${formId} page: ${paginatedSubmissionsUrl}`
+            )
+          );
+          return Result.ok(res);
         })
         .catch((err: Error) => {
           this.logger?.(
@@ -192,10 +189,10 @@ export class OnaApiService {
             )
           );
           let recsAffected = pageSize;
-          if((totalSubmissions - (page * pageSize)) < pageSize )[
+          if ((totalSubmissions - (page * pageSize)) < pageSize) [
             recsAffected = totalSubmissions - (page * pageSize)
           ]
-          return Result.fail<FormSubmissionT[]>(err.message, {code: NETWORK_ERROR, recsAffected, });
+          return Result.fail<FormSubmissionT[]>(err, { code: NETWORK_ERROR, recsAffected, });
         });
     } while (page * pageSize <= totalSubmissions);
   }
@@ -239,9 +236,7 @@ export class OnaApiService {
             `Edited submission with _id: ${submissionPayload._id} for form: ${formId}`
           )
         );
-        return res.json().then((response) => {
-          return Result.ok<Record<string, string>>(response);
-        });
+        return Result.ok<Record<string, string>>(res);
       })
       .catch((err) => {
         this.logger?.(
@@ -271,4 +266,22 @@ export async function upLoadMarkerColor(
     [markerColorAccessor]: colorCode
   };
   return service.editSubmission(formId, newSubmission);
+}
+
+
+function throwHttpError(response: Response) {
+  const { status, url } = response;
+  let errorDetails = [];
+
+  if (url) errorDetails.push(`URL: ${url}`);
+  if (status) errorDetails.push(`Status: ${status}`);
+  if(errorDetails.length){
+    errorDetails = ["Request failed for", ...errorDetails]
+  }
+
+  const errorMessage =  errorDetails.length > 0
+    ? errorDetails.join(' | ')
+    : "An unknown network error occurred.";
+
+    return errorMessage
 }

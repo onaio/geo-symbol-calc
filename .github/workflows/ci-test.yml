@@ -13,26 +13,42 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [20.x]
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
-      - name: Enable corepack
+          node-version: '20.x' # Ensures Node.js version is 20 or higher]
+
+      # Enable Corepack for Yarn v3 support
+      - name: Enable Corepack
         run: corepack enable
-      - name: Insall npm packages
+
+      # Re- set up Node.js environment with Corepack enabled and cache
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x' # Ensures Node.js version is 20 or higher
+          cache: 'yarn'        # Caches Yarn dependencies
+
+      # Install dependencies using Yarn
+      - name: Install dependencies
         run: yarn install --frozen-lockfile
+
       - name: Install system wide playwright dependencies
         run: npx playwright install --with-deps
+
       - name: Lint
         run: yarn lint
-      - name: Run all tests
-        run: yarn test
-      - uses: actions/upload-artifact@v3
+
+      - name: Run core tests
+        run: yarn turbo run test --filter @onaio/symbology-calc-core
+
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report

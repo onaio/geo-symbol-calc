@@ -1,16 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { entries, range } from 'lodash-es';
-	import {
-		formatTimestamp,
-		formatTriggerDuration,
-		parseForTable
-	} from './utils';
+	import { range } from 'lodash-es';
+	import { formatTriggerDuration, parseForTable } from './utils';
 	import PageHeader from '$lib/shared/components/PageHeader.svelte';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { convertCronToHuman } from '../../utils';
-
+	
 	export let data: PageData;
 
 	// callback for manual trigger user action.
@@ -68,15 +64,15 @@
 
 	const getNotModifiedReasons = (metric: any) => {
 		const onlyNotModified = { ...metric.facilitiesEvaluated.notModified };
-		delete onlyNotModified.total
+		delete onlyNotModified.total;
 		return onlyNotModified;
-	}
+	};
 
 	const getNotEvaluatedReasons = (metric: any) => {
 		const notEvaluatedReasons = { ...metric.facilitiesNotEvaluated };
-		delete notEvaluatedReasons.total
+		delete notEvaluatedReasons.total;
 		return notEvaluatedReasons;
-	}
+	};
 </script>
 
 <!-- <svelte:head>
@@ -198,6 +194,14 @@
 							<dt class="col-sm-9">No. of facilities NOT evaluated</dt>
 							<dd class="col-sm-3">{metric?.facilitiesNotEvaluated.total}</dd>
 						</dl>
+						{@const generalErrors = metric?.generalErrors ?? []}
+						<div>
+							{#each generalErrors as error}
+								<div class="alert alert-danger" role="alert">
+									{error}
+								</div>
+							{/each}
+						</div>
 						<!-- parse for facilities evaluated breakdown -->
 						<div class="card mb-3">
 							<div class="card-body">
@@ -230,7 +234,6 @@
 											</td>
 										</tr>
 									</tbody>
-
 								</table>
 
 								<p class="fw-bold">Not Modified.({metric.facilitiesEvaluated.notModified.total})</p>
@@ -246,9 +249,7 @@
 										{#each Object.entries(getNotModifiedReasons(metric)) as row}
 											<tr>
 												<td>{row[0]}</td>
-												<td
-													> {row[1].description}</td
-												>
+												<td> {row[1].description}</td>
 												<td>{row[1].total}</td>
 											</tr>
 										{/each}
@@ -259,10 +260,7 @@
 											</td>
 										</tr>
 									</tbody>
-
 								</table>
-
-
 							</div>
 						</div>
 
@@ -284,13 +282,11 @@
 										{#each Object.entries(getNotEvaluatedReasons(metric)) as row}
 											<tr>
 												<td>{row[0]}</td>
-												<td
-													> {row[1].description}</td
-												>
+												<td> {row[1].description}</td>
 												<td>{row[1].total}</td>
 											</tr>
 										{/each}
-										
+
 										<tr>
 											<td colspan="2">Total</td>
 											<td>
@@ -298,10 +294,7 @@
 											</td>
 										</tr>
 									</tbody>
-								
 								</table>
-
-
 							</div>
 						</div>
 					{/if}
@@ -317,7 +310,7 @@
 		font-weight: 500;
 	}
 
-	th{
+	th {
 		font-weight: 500;
 	}
 </style>

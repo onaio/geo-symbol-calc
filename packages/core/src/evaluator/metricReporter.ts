@@ -12,6 +12,7 @@ export class ReportMetric {
   private facilitiesEvaluatedModified: Record<string, Record<string, number>> = {};
   private facilitiesEvaluatedNotModified: Record<string, number> = {};
   private configId: string;
+  private generalErrors?: Array<string>
 
   constructor(configId: string) {
     this.configId = configId;
@@ -40,6 +41,13 @@ export class ReportMetric {
     } else {
       this[fieldAccessor][resultCode]++;
     }
+  }
+
+  public updateGeneralError(errorMessage: string){
+    if(this.generalErrors === undefined){
+      this.generalErrors = []
+    }
+    this.generalErrors.push(errorMessage)
   }
 
   public updateTotalFacilities(value: number) {
@@ -127,7 +135,8 @@ export class ReportMetric {
       },
       facilitiesNotEvaluated: {
         ...notEvaluated
-      }
+      },
+      generalErrors: this.generalErrors,
     };
   }
 }

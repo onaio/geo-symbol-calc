@@ -84,6 +84,7 @@ export class ConfigRunner {
     abortableBlock: {
       const regForm = await service.fetchSingleForm(regFormId);
       if (regForm.isFailure) {
+        reporter.updateGeneralError(`Fetching form with id ${regFormId} failed due to : ${regForm.error}`)
         yield reporter.generateJsonReport(true);
         return;
       }
