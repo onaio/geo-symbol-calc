@@ -163,8 +163,8 @@ export class Result<T> {
 
 function getErrorDescription(error: Error){
   const { name, message, cause } = error;
-  const code = (cause as Record<string, unknown>).code as string | undefined
-  const causeMessage = (cause as Record<string, unknown>).message as string | undefined
+  const code = (cause as Record<string, unknown> | undefined)?.code as string | undefined
+  const causeMessage = (cause as Record<string, unknown> | undefined)?.message as string | undefined
   const errorDetails = [];
 
   if (name) errorDetails.push(`Error Name: ${name}`);

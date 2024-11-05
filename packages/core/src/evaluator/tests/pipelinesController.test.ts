@@ -174,11 +174,10 @@ it('error when fetching the registration form', async () => {
   expect(loggerMock.mock.calls).toEqual([
     [
       {
-        level: 'error',
-        message:
-          'Operation to fetch form: 3623, failed with err: Error: 400: Could not find form with id: Network request failed.'
-      }
-    ]
+        "level": "error",
+        "message": "Operation to fetch form: 3623, failed with err: Request failed for | URL: https://test-api.ona.io/api/v1/forms/3623 | Status: 400",
+      },
+    ],
   ]);
 
   expect(nock.pendingMocks()).toEqual([]);

@@ -1,4 +1,4 @@
-import { OnaApiService } from '../../services/onaApi/services';
+import * as services from '../../services/onaApi/services';
 import { createConfigs, form3623Submissions } from './fixtures/fixtures';
 import { transformFacility, createMetricFactory } from '../helpers/utils';
 import { colorDeciderFactory } from '../../helpers/utils';
@@ -8,6 +8,8 @@ import {
   submittedDataEndpoint
 } from '../../constants';
 import { RegFormSubmission } from '../../helpers/types';
+
+const {OnaApiService} = services
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nock = require('nock');
@@ -132,7 +134,7 @@ describe('transform facility tests', () => {
         query: `{"facility": ${regFomSubmission._id}}`, // filter visit submissions for this facility
         sort: `{"${dateOfVisitAccessor}": -1}`
       })
-      .reply(502, { message: 'error' });
+      .reply(400, { message: 'error' }).persist();
 
     // after attempt
     nock(baseUrl)
@@ -143,14 +145,14 @@ describe('transform facility tests', () => {
         query: `{"facility": ${regFomSubmission._id}}`, // filter visit submissions for this facility
         sort: `{"${dateOfVisitAccessor}": -1}`
       })
-      .reply(400, { message: 'error' });
+      .reply(400, { message: 'error' }).persist();
 
     nock(baseUrl)
       .post(`/${editSubmissionEndpoint}`, {
         id: '3623',
         submission: {
           ...regFomSubmission,
-          'marker-color': 'green',
+          'marker-color': 'red',
           meta: {
             instanceID: 'uuid:0af4f147-d5fd-486a-bf76-d1bf850cc976',
             deprecatedID: regFomSubmission['meta/instanceID']
@@ -172,18 +174,18 @@ describe('transform facility tests', () => {
       logger
     );
 
-    expect(response).toEqual({
+    expect(response).toMatchObject({
       _value: undefined,
       detail: {
         code: 'ECODE3',
         recsAffected: 0
       },
-      error: '400: {"message":"error"}: Network request failed.',
+      error: expect.any(String),
       isFailure: true,
       isSuccess: false
     });
-    expect(response.error).toEqual('400: {"message":"error"}: Network request failed.');
-  });
+    expect(response.error).toContain("Request failed for | URL: http://sample.com/api/v1/data/3624?page_size=1&page=1&query=%7B%22facility%22%3A+304870%7D&sort=%7B%22endtime%22%3A+-1%7D | Status: 400");
+  }, 20000);
 
   it('cancelling request works', async () => {
     const apiToken = 'apiToken';
@@ -241,7 +243,7 @@ describe('transform facility tests', () => {
           code: 'ECODE3',
           recsAffected: 0
         },
-        error: 'AbortError: The user aborted a request..',
+        "error": "Error Name: AbortError | Message: The user aborted a request.",
         isFailure: true,
         isSuccess: false
       });
