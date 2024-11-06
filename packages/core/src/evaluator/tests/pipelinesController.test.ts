@@ -175,7 +175,7 @@ it('error when fetching the registration form', async () => {
     [
       {
         "level": "error",
-        "message": "Operation to fetch form: 3623, failed with err: Request failed for | URL: https://test-api.ona.io/api/v1/forms/3623 | Status: 400",
+        "message": "Operation to fetch form: 3623, failed with err: Error Name: Error | Message: Request failed for | URL: https://test-api.ona.io/api/v1/forms/3623 | Status: 400",
       },
     ],
   ]);

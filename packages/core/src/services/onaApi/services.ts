@@ -57,7 +57,7 @@ export const customFetch = async (input: RequestInfo, init?: RequestInit, logger
 
   const response = await persistentFetch(input, requestOptionsWithRetry)
   if (response && !response.ok) {
-    throw throwHttpError(response)
+    throwHttpError(response)
   }
   return await response.json()
 };
@@ -102,10 +102,11 @@ export class OnaApiService {
         return Result.ok<Form>(res);
       })
       .catch((err: Error) => {
+        const failResult = Result.fail<Form>(err, NETWORK_ERROR)
         this.logger?.(
-          createErrorLog(`Operation to fetch form: ${formId}, failed with err: ${err}`)
+          createErrorLog(`Operation to fetch form: ${formId}, failed with err: ${failResult.error}`)
         );
-        return Result.fail<Form>(err, NETWORK_ERROR);
+        return failResult
       });
   }
 
@@ -183,16 +184,18 @@ export class OnaApiService {
           return Result.ok(res);
         })
         .catch((err: Error) => {
-          this.logger?.(
-            createErrorLog(
-              `Unable to fetch submissions for form id: ${formId} page: ${paginatedSubmissionsUrl} with err : ${err.message}`
-            )
-          );
+          
           let recsAffected = pageSize;
           if ((totalSubmissions - (page * pageSize)) < pageSize) [
             recsAffected = totalSubmissions - (page * pageSize)
           ]
-          return Result.fail<FormSubmissionT[]>(err, { code: NETWORK_ERROR, recsAffected, });
+          const failResult =  Result.fail<FormSubmissionT[]>(err, { code: NETWORK_ERROR, recsAffected, });
+          this.logger?.(
+            createErrorLog(
+              `Unable to fetch submissions for form id: ${formId} page: ${paginatedSubmissionsUrl} with err : ${failResult.error}`
+            )
+          );
+          return failResult
         });
     } while (page * pageSize <= totalSubmissions);
   }
@@ -239,12 +242,13 @@ export class OnaApiService {
         return Result.ok<Record<string, string>>(res);
       })
       .catch((err) => {
+        const failResult = Result.fail(err, NETWORK_ERROR)
         this.logger?.(
           createErrorLog(
-            `Failed to edit sumbission with _id: ${submissionPayload._id} for form with id: ${formId} with err: ${err.message}`
+            `Failed to edit sumbission with _id: ${submissionPayload._id} for form with id: ${formId} with err: ${failResult.error}`
           )
         );
-        return Result.fail(err, NETWORK_ERROR);
+        return failResult;
       });
   }
 }
@@ -283,5 +287,5 @@ function throwHttpError(response: Response) {
     ? errorDetails.join(' | ')
     : "An unknown network error occurred.";
 
-    return errorMessage
+    throw new Error(errorMessage)
 }
